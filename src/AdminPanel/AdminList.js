@@ -19,7 +19,7 @@ const AdminList = () => {
         const adminDetailsFetch = getApi(enums.BASE_URL + enums.ENDPOINTS.ADMIN.GETALL);
         adminDetailsFetch.then(data => {
             if (data) {
-                console.log("data admin", data);
+                // console.log("data admin", data);
                 let temp = []
                 data && data.map((x, index) => {
                     let tempdata = x
@@ -63,7 +63,7 @@ const AdminList = () => {
             onOk: () => {
                 const deleteAction = deleteApi(enums.BASE_URL + enums.ENDPOINTS.ADMIN.DELETE + id);
                 deleteAction.then(data => {
-                    console.log("data for deleted user ", data);
+                    // console.log("data for deleted user ", data);
                     if (data) {
                         message.success("Admin Deleted Successfully")
                         setRequestDone(requestDone + 1)
@@ -74,7 +74,8 @@ const AdminList = () => {
 
             },
             onCancel: () => {
-                console.log("Action canceled"); // Handle cancel action here
+                // console.log("Action canceled"); // Handle cancel action here
+                message.info("Action Cancelled")
             },
         });
     }

@@ -38,7 +38,7 @@ const QuestionsList = () => {
             onOk: () => {
                 const deleteAction = deleteApi(enums.BASE_URL + enums.ENDPOINTS.Questions.DELETE_QUESTION + id);
                 deleteAction.then(data => {
-                    console.log("data for deleted user ", data);
+                    // console.log("data for deleted user ", data);
                     if (data) {
                         message.success("User Deleted Successfully")
                         setRequestDone(requestDone + 1)
@@ -48,6 +48,7 @@ const QuestionsList = () => {
                 })
             },
             onCancel: () => {
+                message.info("Action canceled")
                 console.log("Action canceled"); // Handle cancel action here
             },
         });
@@ -57,7 +58,7 @@ const QuestionsList = () => {
         if (ActionType === "edit") {
             questionsList && questionsList.map((x) => {
                 if (id === x.id) {
-                    console.log("editing user detail ", x);
+                    // console.log("editing user detail ", x);
                     form.setFieldsValue({ "question": x.question, "optionA": x.optionA, "optionB": x.optionB, "optionC": x.optionC, "optionD": x.optionD, "correctoption": x.correctOption, "marks": x.marks, "created_date": x.created_date, "updated_date": x.updated_date });
                 }
             })
@@ -175,12 +176,12 @@ const QuestionsList = () => {
             updated_date: now(),
         }
 
-        console.log("requestBody for creating the user ", requestBody);
+        // console.log("requestBody for creating the user ", requestBody);
 
         if (Action === 'add') {
             const postQuestionDetails = postApi(enums.BASE_URL + enums.ENDPOINTS.Questions.ADD_QUESTION, requestBody)
             postQuestionDetails.then(data => {
-                console.log("data ", data)
+                // console.log("data ", data)
                 message.success("User added successfully")
                 setRequestDone(requestDone + 1)
                 setOpen(false)
@@ -190,7 +191,7 @@ const QuestionsList = () => {
         } else {
             const postQuestionDetails = putApi(enums.BASE_URL + enums.ENDPOINTS.Questions.UPDATE_QUESTION + IdSelected, requestBody)
             postQuestionDetails.then(data => {
-                console.log("data ", data)
+                // console.log("data ", data)
                 message.success("User edited successfully")
                 setRequestDone(requestDone + 1)
                 setOpen(false)
@@ -208,6 +209,7 @@ const QuestionsList = () => {
                 postDetails(); // Pass postDetails as a callback
             },
             onCancel: () => {
+                message.info("Action canceled")
                 console.log("Action canceled"); // Handle cancel action here
             },
         });

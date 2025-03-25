@@ -1,6 +1,6 @@
 
+import { message, Modal } from "antd";
 import React from "react";
-import { Modal, Button } from "antd";
 
 const Content_guideLines_Login_page = () => {
 
@@ -48,7 +48,8 @@ const Content_guideLines_Login_page = () => {
                 </div>
             ),
             onOk() {
-                console.log("Modal Closed");
+                message.info("Modal Closed")
+                // console.log("Modal Closed");
             },
             closable: true, // Optional: Adds a close button to the top-right corner
         });

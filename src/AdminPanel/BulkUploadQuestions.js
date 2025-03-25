@@ -21,9 +21,9 @@ function BulkUploadOfQuestions(props) {
       setFileList([]);
     } else {
       const uploadedFile = info.file.originFileObj;
-      console.log("uploadedFile", uploadedFile)
+      // console.log("uploadedFile", uploadedFile)
       if (uploadedFile) {
-        console.log("Uploaded File:", uploadedFile);
+        // console.log("Uploaded File:", uploadedFile);
         setFile(uploadedFile);
         setFileList([info.file])
       } else {
@@ -44,7 +44,7 @@ function BulkUploadOfQuestions(props) {
     axios.post(enums.BASE_URL + (flag === 'questions' ? enums.ENDPOINTS.Questions.BULKUPLOAD : enums.ENDPOINTS.LOGIN.BULKUPLOAD), formData, { headers: { "Content-Type": "multipart/form-data" ,"Authorization":`Bearer ${getCookie('jwtToken')}`,"Demo":String(getCookie('isdemo') === 'true')} })
       .then(data => {
         if (data) {
-          console.log("Questions bulk data", data)
+          // console.log("Questions bulk data", data)
           setLoading(false);
           message.success("Bulk upload of Questions operation was success")
           setFile(null);

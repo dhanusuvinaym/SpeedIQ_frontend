@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { getCookie, setCookie } from '../Cookies/GetCookies';
 import { Button } from 'antd';
+import React from 'react';
+import { getCookie, setCookie } from '../Cookies/GetCookies';
 
 const ContentAndGuidelines = (props) => {
     const { timerDone } = props
@@ -20,7 +20,7 @@ const ContentAndGuidelines = (props) => {
                 {!isdemo &&
                     <>
                         <center><h3>User Details</h3></center>
-                        <p style={{ fontFamily: "bold", fontSize: "large",marginTop:"0.2cm" }}> Mobile No : {getCookie('username')}</p>
+                        <p style={{ fontFamily: "bold", fontSize: "large", marginTop: "0.2cm" }}> Mobile No : {getCookie('username')}</p>
                         <p style={{ fontFamily: "bold", fontSize: "large" }}> Token Id : {getCookie('tokenId')}</p>
                     </>
                 }

@@ -24,6 +24,7 @@ import { now } from '../DateTime';
 import Content_guideLines from '../UserPanel/Content_guideLines';
 import QuizPage from '../UserPanel/QuizPage';
 import AdminDetailsPage from '../AdminPanel/AdminList';
+import ClearQuiz from '../ClearQuiz/ClearQuiz'
 
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -64,7 +65,7 @@ const items = [
 //   label: `nav ${index + 1}`,
 // }));
 
-const admin_side_nav_options = ["Admin", "Users", "Questions", "User Performance", "Bulk Upload Users", "Bulk Upload Questions"].map((icon, index) => ({
+const admin_side_nav_options = ["Admin", "Users", "Questions", "User Performance", "Bulk Upload Users", "Bulk Upload Questions","Clear Quiz"].map((icon, index) => ({
   key: String(index + 1),
   icon: React.createElement(items[index]),
   label: icon,
@@ -148,7 +149,7 @@ const App = () => {
   })
 
 
-  console.log("isAdmin = ", isAdmin)
+  // console.log("isAdmin = ", isAdmin)
 
   useEffect(() => {
     if (isAdmin) {
@@ -164,7 +165,7 @@ const App = () => {
 
 
   useEffect(() => {
-    console.log("userGuideLinesDone = ", userGuideLinesDone, "questions count ", parseInt(getCookie('questionsLength')))
+    // console.log("userGuideLinesDone = ", userGuideLinesDone, "questions count ", parseInt(getCookie('questionsLength')))
     if (userGuideLinesDone) {
       setSelectedSideNavOption("Quiz");
       handleUpdateQuestionsCount(parseInt(getCookie('questionsLength')))
@@ -176,7 +177,7 @@ const App = () => {
     setSelectedSideNavOption(admin_side_nav_options[parseInt(key.key) - 1].label);
   }
 
-  console.log("key value ", selectedSideNavOption)
+  // console.log("key value ", selectedSideNavOption)
 
   const handleLogout = () => {
     if (!isAdmin) {
@@ -206,7 +207,7 @@ const App = () => {
   }
 
   const handleQuestionNoClick = (key) => {
-    console.log("Key from side bar ", key)
+    // console.log("Key from side bar ", key)
     setSelectedkey(key.key)
     setQuestionSelected(QuestionNavOptions[parseInt(key.key) - 1].label)
   }
@@ -305,6 +306,8 @@ const App = () => {
                 return <BulkUploadOfQuestions flag="login" />
               case "Content Guide Lines":
                 return <Content_guideLines timerDone={handleUserguideLinesDone} />
+              case "Clear Quiz":
+                return <ClearQuiz/>
               case "Quiz":
               case "Results":
                 return <QuizPage

@@ -85,8 +85,8 @@ export const deleteApi = async (apiUrl) => {
   const jwtToken = getCookie('jwtToken')
   const isdemo = getCookie('isdemo') === 'true'
 
-  console.log("jwtToken in deleteApi ",jwtToken)
-  console.log("isdemo in deleteApi ",isdemo)
+  // console.log("jwtToken in deleteApi ",jwtToken)
+  // console.log("isdemo in deleteApi ",isdemo)
 
   const response = await axios.delete(apiUrl, {
     headers: {

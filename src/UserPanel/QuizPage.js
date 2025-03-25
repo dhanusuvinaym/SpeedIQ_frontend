@@ -1,11 +1,11 @@
+import { CloseCircleOutlined } from '@ant-design/icons';
 import { Button, message, Modal } from 'antd';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import { getApi, inVallidateUser, postApi } from "../API/AllRequestTypeAPIsLogic";
 import enums from "../API/ApiList";
 import { clearCookies, getCookie, setCookie } from "../Cookies/GetCookies";
 import { formatDuration, now } from '../DateTime';
-import { CloseCircleOutlined } from '@ant-design/icons';
 
 
 const QuizPage = (props) => {
@@ -27,6 +27,7 @@ const QuizPage = (props) => {
     const [startTime] = useState(getCookie('startTime') ? new Date(getCookie('startTime')) : new Date());
     const autoSubmit = props.autoSubmit
     const isDemo = getCookie("isdemo") === 'true'
+    const hasSubmitted = useRef(false);
 
 
     useEffect(() => {
@@ -43,6 +44,10 @@ const QuizPage = (props) => {
 
     useEffect(() => {
         if (Object.keys(answers).length !== 0) {
+            if (Object.keys(answers).length === 10 && !hasSubmitted.current) {
+                handleSubmit();
+                hasSubmitted.current = true;
+            }
             handleprevNextAction('N')
         }
     }, [answers])
@@ -72,7 +77,7 @@ const QuizPage = (props) => {
         }
     }, [])
 
-    console.log("questionData", questionData)
+    // console.log("questionData", questionData)
 
     const handleChange = (questionId, selectedOption) => {
         setAnswers((prevAnswers) => {
@@ -106,7 +111,7 @@ const QuizPage = (props) => {
         return marks;
     }
 
-    console.log("questionData = ", questionData)
+    // console.log("questionData = ", questionData)
 
     const handleSubmit = () => {
         if (!autoSubmit) {
@@ -147,27 +152,24 @@ const QuizPage = (props) => {
 
                         const postRequestForAnalysis = postApi(enums.BASE_URL + enums.ENDPOINTS.ANALYSIS.SAVE + user_id, requestJsonForAnalysis);
                         postRequestForAnalysis.then(data => {
-                            if (data) {
-                                console.log("response for analysis body ", data);
-                                // message.success("Analysis api done")
-                            }
-                        }).catch(exception => {
-                            console.error("exception e ", exception);
-                        })
 
-                        const postRequestForUserPerformance = postApi(enums.BASE_URL + enums.ENDPOINTS.USERS_PERFORMANCE.SAVE_DETAILS, requestJSONFORUserPerformance);
-                        postRequestForUserPerformance.then(data => {
-                            if (data) {
-                                console.log("response for postRequestForUserPerformancesis body ", data);
+                            const postRequestForUserPerformance = postApi(enums.BASE_URL + enums.ENDPOINTS.USERS_PERFORMANCE.SAVE_DETAILS, requestJSONFORUserPerformance);
+                            postRequestForUserPerformance.then(data => {
+
+                                // console.log("response for postRequestForUserPerformancesis body ", data);
                                 // message.success("user performance api done")
-                            }
+                                inVallidateUser();
+
+                                message.success("Test submitted Successfully")
+
+                            }).catch(exception => {
+                                console.error("exception e ", exception);
+                            })
+
                         }).catch(exception => {
                             console.error("exception e ", exception);
                         })
 
-                        inVallidateUser();
-
-                        message.success("Test submitted Successfully")
                     }
                     setQuizDone(true);
                     setCookie("quizDone", true)
@@ -186,10 +188,10 @@ const QuizPage = (props) => {
                                 <p> Total wrong answers = <a style={{ color: "red", fontWeight: "bold" }}> {questionData?.length - totalMarks}</a> </p>
                                 <p> Total Marks = <a style={{ color: "green", fontWeight: "bold" }}>{totalMarks}</a></p>
                             </div>,
-                         okText: "View Summary", // Change "OK" to "View Summary"
-                         cancelText: null, // Remove default Cancel button
-                         closable: true, // Enable closing the modal
-                         closeIcon: <CloseCircleOutlined />,
+                        okText: "View Summary", // Change "OK" to "View Summary"
+                        cancelText: null, // Remove default Cancel button
+                        closable: true, // Enable closing the modal
+                        closeIcon: <CloseCircleOutlined />,
                         onOk: () => {
                             setShowResults(true);
                         },
@@ -236,7 +238,7 @@ const QuizPage = (props) => {
                 const postRequestForAnalysis = postApi(enums.BASE_URL + enums.ENDPOINTS.ANALYSIS.SAVE + user_id, requestJsonForAnalysis);
                 postRequestForAnalysis.then(data => {
                     if (data) {
-                        console.log("response for analysis body ", data);
+                        // console.log("response for analysis body ", data);
                         // message.success("Analysis api done")
                     }
                 }).catch(exception => {
@@ -246,7 +248,7 @@ const QuizPage = (props) => {
                 const postRequestForUserPerformance = postApi(enums.BASE_URL + enums.ENDPOINTS.USERS_PERFORMANCE.SAVE_DETAILS, requestJSONFORUserPerformance);
                 postRequestForUserPerformance.then(data => {
                     if (data) {
-                        console.log("response for postRequestForUserPerformancesis body ", data);
+                        // console.log("response for postRequestForUserPerformancesis body ", data);
                         // message.success("user performance api done")
                     }
                 }).catch(exception => {
@@ -287,11 +289,11 @@ const QuizPage = (props) => {
         }
     }
 
-    console.log("showresults", showResults, questionData, correctOptions)
+    // console.log("showresults", showResults, questionData, correctOptions)
 
     // console.log("Question Data",questionData[questionSelected].id)
-    console.log("questionData length:", questionData, questionSelected);
-    console.log("answers", answers)
+    // console.log("questionData length:", questionData, questionSelected);
+    // console.log("answers", answers)
 
     return (
         <div style={{ height: "100%" }}>

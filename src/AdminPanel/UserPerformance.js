@@ -28,52 +28,14 @@ const UserPerformance = () => {
                 x.rank = index + 1;
                 userTemp.push(x);
             })
-            console.log("userTemp ", userTemp)
+            // console.log("userTemp ", userTemp)
             setUserDetails(userTemp)
         }).catch(error => {
             console.error("Error fetching data:", error);
         });
     }, [])
 
-    // const handleDelete = (id) => {
-    //     Modal.confirm({
-    //         title: "Are you sure?",
-    //         content: "Do you want to proceed with this action?",
-    //         onOk: () => {
-    //             const deleteAction = deleteApi(enums.BASE_URL + enums.ENDPOINTS.USERS_PERFORMANCE.DELETE_DETAILS + id);
-    //             deleteAction.then(data => {
-    //                 console.log("data for deleted user ", data);
-    //                 if (data) {
-    //                     message.success("User Deleted Successfully")
-    //                     setRequestDone(requestDone + 1)
-    //                 }
-    //             }).catch(exception => {
-    //                 console.error("exception while deleting the user Details ", exception)
-    //             })
-
-    //         },
-    //         onCancel: () => {
-    //             console.log("Action canceled"); // Handle cancel action here
-    //         },
-    //     });
-    // }
-
-    // const handleActionButton = (ActionType, id) => {
-    //     if (ActionType === "edit") {
-    //         usersDetails && usersDetails.map((x) => {
-    //             if (id === x.id) {
-    //                 console.log("editing user detail ", x);
-    //                 form.setFieldsValue({ 'username': x.username, "tokenId": x.tokenId, "Admin": x.isadmin, "created_date": x.created_date });
-    //             }
-    //         })
-    //         setAction('edit')
-    //     } else if (ActionType === "add") {
-    //         setAction('add')
-    //     }
-    //     setOpen(true);
-    //     setIdSelected(id);
-    // }
-
+  
     const handleTokenClick = (tokenId) => {
         // message.info(tokenId)
         setTokenId(tokenId);
@@ -87,7 +49,7 @@ const UserPerformance = () => {
                     t.sno=index+1;
                     temp.push(t);
                 })
-                console.log("Data by Token Id",temp);
+                // console.log("Data by Token Id",temp);
                 setQuestionsAttenedByUser(temp);    
                 setIsOpen(true);
             }
@@ -132,7 +94,7 @@ const UserPerformance = () => {
         },
         {
             headerName: "Exam Duration", description: "Exam Duration", field: "examDurationTime", width: "220", align: "center", headerAlign: "center", headerClassName: "headerCellColor", sortable: false, valueFormatter: (value, row, column, apiRef) => {
-                console.log("Value = ", value)
+                // console.log("Value = ", value)
                 if (value) {
                     return value; // Return the formatted duration string (e.g., "01:23:45.678")
                 }
@@ -215,71 +177,6 @@ const UserPerformance = () => {
         // This is just a placeholder; you may use a library like moment.js or another method
         return date.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' });
     };
-
-    // const postDetails = () => {
-
-    //     let requestBody = {
-    //         id: Action === "edit" ? IdSelected : null,
-    //         tokenId: form.getFieldValue(['tokenId']),
-    //         username: form.getFieldValue(['username']),
-    //         created_date: Action === 'add' ? now() : form.getFieldValue(['created_date']),
-    //         updated_date: now(),
-    //         isadmin: form.getFieldValue(['Admin']) ? true : false
-    //     }
-
-    //     console.log("requestBody for creating the user ", requestBody);
-
-    //     if (requestBody?.tokenId && requestBody?.username) {
-    //         if (Action === 'add') {
-    //             const postUserDetails = postApi(enums.BASE_URL + enums.ENDPOINTS.LOGIN.REGISTER, requestBody)
-    //             postUserDetails.then(data => {
-    //                 console.log("data ", data)
-    //                 message.success("User added successfully")
-    //                 setRequestDone(requestDone + 1)
-    //                 setOpen(false)
-    //             }).catch(exception => {
-    //                 console.error("Error in posting the user details", exception)
-    //             })
-    //         } else {
-    //             const postUserDetails = putApi(enums.BASE_URL + enums.ENDPOINTS.LOGIN.UPDATE + IdSelected, requestBody)
-    //             postUserDetails.then(data => {
-    //                 console.log("data ", data)
-    //                 message.success("User edited successfully")
-    //                 setRequestDone(requestDone + 1)
-    //                 setOpen(false)
-    //             }).catch(exception => {
-    //                 console.error("Error in posting the user details", exception)
-    //             })
-    //         }
-    //     } else if (!requestBody?.tokenId && !requestBody?.username) {
-    //         message.info("Please enter the token Id and username")
-    //     } else if (!requestBody?.tokenId) {
-    //         message.info("Please enter the token Id")
-    //     } else {
-    //         message.info("Please enter the username")
-    //     }
-    // }
-
-    // const handleOk = () => {
-    //     Modal.confirm({
-    //         title: "Are you sure?",
-    //         content: "Do you want to proceed with this action?",
-    //         onOk: () => {
-    //             postDetails(); // Pass postDetails as a callback
-    //         },
-    //         onCancel: () => {
-    //             console.log("Action canceled"); // Handle cancel action here
-    //         },
-    //     });
-    // }
-
-    // const handleCancel = () => {
-    //     setOpen(false)
-    // }
-
-    // const handleFinishFailed = () => {
-    //     message.info("Please ensure the required fields are filled!")
-    // }
 
     const handleCancel = () => {
         setIsOpen(false);

@@ -57,7 +57,7 @@ function LoginPage() {
 
     let loginRequest = postApi(enums.BASE_URL + enums.ENDPOINTS.LOGIN.VALIDATE, data)
     loginRequest.then(data => {
-      console.log("data", data);
+      // console.log("data", data);
       if (data.isvalid) {
         navigate("/nav");
         setCookie("tokenId", data?.tokenId)
@@ -78,7 +78,7 @@ function LoginPage() {
         message.error("Exception while logging in", err?.response?.data);
       });
 
-    console.log("Token ID:", token);
+    // console.log("Token ID:", token);
   };
 
   const handleAdminLogin = (e) => {
@@ -90,7 +90,7 @@ function LoginPage() {
     const validateAdmin = postApi(enums.BASE_URL + enums.ENDPOINTS.ADMIN.VALIDATE + `?username=${data?.username}&password=${data?.password}`, null)
     validateAdmin.then(data => {
       if (data) {
-        console.log("Data from the admin ", data);
+        // console.log("Data from the admin ", data);
         message.success("Logined Successfully!")
         navigate("/nav");
         setCookie("password", data?.password)
@@ -116,7 +116,7 @@ function LoginPage() {
   }
 
   const handleClickOnDemo = () => {
-    alert("function invoked");
+    // alert("function invoked");
     setCookie("isdemo", true)
     navigate("/nav");
   }

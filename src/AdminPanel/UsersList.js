@@ -24,7 +24,7 @@ const UsersList = () => {
                 x.actionId = x.id;
                 loginTemp.push(x);
             })
-            console.log("loginTemp ",loginTemp)
+            // console.log("loginTemp ",loginTemp)
             setLoginDetails(loginTemp)
         }).catch(error => {
             console.error("Error fetching data:", error);
@@ -38,7 +38,7 @@ const UsersList = () => {
             onOk: () => {
                 const deleteAction = deleteApi(enums.BASE_URL + enums.ENDPOINTS.LOGIN.DELETE + id);
                 deleteAction.then(data => {
-                    console.log("data for deleted user ", data);
+                    // console.log("data for deleted user ", data);
                     if (data) {
                         message.success("User Deleted Successfully")
                         setRequestDone(requestDone + 1)
@@ -49,7 +49,8 @@ const UsersList = () => {
 
             },
             onCancel: () => {
-                console.log("Action canceled"); // Handle cancel action here
+                message.info("Action canceled")
+                // console.log("Action canceled"); // Handle cancel action here
             },
         });
     }
@@ -141,12 +142,12 @@ const UsersList = () => {
             isvalid: true
         }
 
-        console.log("requestBody for creating the user ", requestBody);
+        // console.log("requestBody for creating the user ", requestBody);
 
         if (requestBody?.tokenId) {
             const postUserDetails = postApi(enums.BASE_URL + enums.ENDPOINTS.LOGIN.REGISTER, requestBody)
             postUserDetails.then(data => {
-                console.log("data for posting data ", data)
+                // console.log("data for posting data ", data)
                 message.success("User added successfully")
                 setRequestDone(requestDone + 1)
                 setOpen(false)
@@ -167,7 +168,8 @@ const UsersList = () => {
                 postDetails(); // Pass postDetails as a callback
             },
             onCancel: () => {
-                console.log("Action canceled"); // Handle cancel action here
+                message.info("Action canceled")
+                // console.log("Action canceled"); // Handle cancel action here
             },
         });
     }

@@ -93,3 +93,8 @@ code {
 .MuiDataGrid-menuIcon{
   background-color: white;
 }
+
+.ant-modal-body {
+  max-height: 400px; /* Adjust height as needed */
+  overflow-y: auto;
+}
