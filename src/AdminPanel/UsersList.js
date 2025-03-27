@@ -5,7 +5,7 @@ import { deleteApi, getApi, postApi, putApi } from '../API/AllRequestTypeAPIsLog
 import enums from '../API/ApiList';
 import DataGridTable from "../DataGridTableStructure.js/DataGridTable";
 import { now } from '../DateTime'
-
+import {openNotification} from '../DataGridTableStructure.js/PopupMessage'
 
 const UsersList = () => {
 
@@ -40,7 +40,8 @@ const UsersList = () => {
                 deleteAction.then(data => {
                     // console.log("data for deleted user ", data);
                     if (data) {
-                        message.success("User Deleted Successfully")
+                        openNotification("User Deleted Successfully","top","success")
+                        // message.success("User Deleted Successfully")
                         setRequestDone(requestDone + 1)
                     }
                 }).catch(exception => {
@@ -49,7 +50,8 @@ const UsersList = () => {
 
             },
             onCancel: () => {
-                message.info("Action canceled")
+                openNotification("Action canceled","top","info")
+                // message.info("Action canceled")
                 // console.log("Action canceled"); // Handle cancel action here
             },
         });
@@ -63,12 +65,13 @@ const UsersList = () => {
 
     const UserDetailsColums = [
         { headerName: "Sr.NO", description: "Sr.NO", field: "sno", width: "100", align: "center", headerAlign: "center", headerClassName: "headerCellColor" },
+        { headerName: "User Name", description: "User Name", field: "username", width: "150", align: "center", headerAlign: "center", headerClassName: "headerCellColor" },
         { headerName: "Mobile Number", description: "Mobile Number", field: "mobileNumber", width: "150", align: "center", headerAlign: "center", headerClassName: "headerCellColor" },
         { headerName: "Token Id", description: "Token Id", field: "tokenId", width: "150", align: "center", headerAlign: "center", headerClassName: "headerCellColor" },
         // { headerName: "Is Admin", description: "Is Admin", field: "isadmin", width: "160", align: "center", headerAlign: "center", headerClassName: "headerCellColor" },
-        { headerName: "Valid", description: "Is Valid", field: "isvalid", width: "160", align: "center", headerAlign: "center", headerClassName: "headerCellColor" },
+        { headerName: "Valid", description: "Is Valid", field: "isvalid", width: "150", align: "center", headerAlign: "center", headerClassName: "headerCellColor" },
         {
-            headerName: "Activity Date", description: "Activity Date", field: "activity_date", align: "center", width: "350", align: "center", headerAlign: "center", headerClassName: "headerCellColor", valueFormatter: (value, row, column, apiRef) => {
+            headerName: "Activity Date", description: "Activity Date", field: "activity_date", align: "center", width: "200", align: "center", headerAlign: "center", headerClassName: "headerCellColor", valueFormatter: (value, row, column, apiRef) => {
                 if (value) {
                     const timestamp = Date.parse(value); // Parse the formatted date string into a timestamp
 
@@ -83,7 +86,7 @@ const UsersList = () => {
             , sortComparator: DateSorting
         },
         {
-            headerName: "Action", description: "Perform Action", field: "actionId", width: "250", align: "center", headerAlign: "center", headerClassName: "headerCellColor", renderCell: (params) => {
+            headerName: "Action", description: "Perform Action", field: "actionId", width: "200", align: "center", headerAlign: "center", headerClassName: "headerCellColor", renderCell: (params) => {
                 return (
                     <div>
                         <PlusCircleFilled style={{ fontSize: "16px", color: "#1677ff", cursor: "pointer" }} onClick={() => handleActionButton(params.value)} />
@@ -148,15 +151,18 @@ const UsersList = () => {
             const postUserDetails = postApi(enums.BASE_URL + enums.ENDPOINTS.LOGIN.REGISTER, requestBody)
             postUserDetails.then(data => {
                 // console.log("data for posting data ", data)
-                message.success("User added successfully")
+                openNotification("User added Successfully","top","success")
+                // message.success("User added successfully")
                 setRequestDone(requestDone + 1)
                 setOpen(false)
             }).catch(exception => {
                 console.error("Error in posting the user details", exception?.response.data)
-                message.error(exception?.response.data)
+                openNotification(exception?.response.data,"top","error")
+                // message.error(exception?.response.data)
             })
         } else {
-            message.info("Please enter the token Id and username")
+            openNotification("Please enter the token Id and username","top","info")
+            // message.info("Please enter the token Id and username")
         }
     }
 
@@ -168,7 +174,8 @@ const UsersList = () => {
                 postDetails(); // Pass postDetails as a callback
             },
             onCancel: () => {
-                message.info("Action canceled")
+                openNotification("Action canceled","top","info")
+                // message.info("Action canceled")
                 // console.log("Action canceled"); // Handle cancel action here
             },
         });
@@ -179,7 +186,8 @@ const UsersList = () => {
     }
 
     const handleFinishFailed = () => {
-        message.info("Please ensure the required fields are filled!")
+        openNotification("Please ensure the required fields are filled!","top","info")
+        // message.info("Please ensure the required fields are filled!")
     }
 
     return (

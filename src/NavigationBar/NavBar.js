@@ -7,24 +7,24 @@ import {
   UploadOutlined,
   UserOutlined,
   VideoCameraOutlined,
+  MenuOutlined
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 import { faBrain } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Layout, Menu, message, theme } from 'antd';
+import { Button, Layout, Menu, message, theme, Drawer } from 'antd';
 import React, { useEffect, useState } from 'react';
-import QuestionsList from '../AdminPanel/QuestionsList';
-import UsersList from '../AdminPanel/UsersList';
-import UserPerformance from '../AdminPanel/UserPerformance';
+import { useNavigate } from 'react-router-dom';
+import AdminDetailsPage from '../AdminPanel/AdminList';
 import BulkUploadOfQuestions from '../AdminPanel/BulkUploadQuestions';
+import QuestionsList from '../AdminPanel/QuestionsList';
+import UserPerformance from '../AdminPanel/UserPerformance';
+import UsersList from '../AdminPanel/UsersList';
+import { inVallidateUser } from '../API/AllRequestTypeAPIsLogic';
+import ClearQuiz from '../ClearQuiz/ClearQuiz';
 import { clearCookies, getCookie, setCookie } from '../Cookies/GetCookies';
-import enums from '../API/ApiList';
-import { putApi, inVallidateUser } from '../API/AllRequestTypeAPIsLogic';
-import { now } from '../DateTime';
 import Content_guideLines from '../UserPanel/Content_guideLines';
 import QuizPage from '../UserPanel/QuizPage';
-import AdminDetailsPage from '../AdminPanel/AdminList';
-import ClearQuiz from '../ClearQuiz/ClearQuiz'
+import { openNotification } from '../DataGridTableStructure.js/PopupMessage';
 
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -65,11 +65,6 @@ const items = [
 //   label: `nav ${index + 1}`,
 // }));
 
-const admin_side_nav_options = ["Admin", "Users", "Questions", "User Performance", "Bulk Upload Users", "Bulk Upload Questions","Clear Quiz"].map((icon, index) => ({
-  key: String(index + 1),
-  icon: React.createElement(items[index]),
-  label: icon,
-}));
 
 
 const Timer = (props) => {
@@ -139,17 +134,43 @@ const App = () => {
   const [marks, setMarks] = useState(null);
   const [clickedOnSubmit, setClickedOnSubmit] = useState(false)
   const [autoSubmit, setAutoSubmit] = useState(false);
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  const [isDrawerVisible, setIsDrawerVisible] = useState(false);
 
+  const admin_side_nav_options = ["Admin", "Users", "Questions", "User Performance", "Bulk Upload Users", "Bulk Upload Questions", "Clear Quiz", "Logout"].map((icon, index) => ({
+    key: String(index + 1),
+    icon: React.createElement(items[index]),
+    label: icon,
+  }));
+
+
+  const showDrawer = () => {
+    setIsDrawerVisible(true);
+  };
+
+  const closeDrawer = () => {
+    setIsDrawerVisible(false);
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isvalid && !isDemo) {
-      message.error("Please login!");
+      openNotification("Please login!","top","error")
+      // message.error("Please login!");
       navigate("/")
     }
   })
-
-
-  // console.log("isAdmin = ", isAdmin)
 
   useEffect(() => {
     if (isAdmin) {
@@ -172,20 +193,26 @@ const App = () => {
     }
   }, [userGuideLinesDone])
 
+  useEffect(() => {
+    if (selectedSideNavOption === "Logout") {
+      handleLogout();
+    } 
+  }, [selectedSideNavOption])
+
   const handleMenuClick = (key) => {
     setSelectedkey(key.key)
     setSelectedSideNavOption(admin_side_nav_options[parseInt(key.key) - 1].label);
+    setIsDrawerVisible(false);
   }
-
-  // console.log("key value ", selectedSideNavOption)
 
   const handleLogout = () => {
     if (!isAdmin) {
       inVallidateUser();
-    } 
+    }
     clearCookies();
     navigate('/')
-    message.success("Logout Successfully")
+    openNotification("Logout Successfully","top","success")
+    // message.success("Logout Successfully")
   }
 
   const handleUserguideLinesDone = (flag) => {
@@ -236,58 +263,84 @@ const App = () => {
 
   return (
     <div>
-      {selectedSideNavOption !== 'Content Guide Lines' && selectedSideNavOption !== 'Results' &&
-        <Sider collapsible style={siderStyle} collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-          <div className="demo-logo-vertical" />
-          <Menu theme="dark"
-            mode="inline"
-            defaultSelectedKeys={['1']}
-            selectedKeys={[selectedKey]}
-            items={isAdmin ? admin_side_nav_options : QuestionNavOptions}
-            onClick={isAdmin ? handleMenuClick : handleQuestionNoClick}
-          />
-        </Sider>
-      }
+        {screenWidth > 1000 && selectedSideNavOption !== 'Content Guide Lines' && selectedSideNavOption !== 'Results' &&
+          <Sider collapsible style={siderStyle} collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
+            <div className="demo-logo-vertical" />
+            <Menu theme="dark"
+              mode="inline"
+              defaultSelectedKeys={['1']}
+              selectedKeys={[selectedKey]}
+              items={isAdmin ? admin_side_nav_options : QuestionNavOptions}
+              onClick={isAdmin ? handleMenuClick : handleQuestionNoClick}
+            />
+          </Sider>
+        }
+      
 
-
-      <div style={{ marginLeft: selectedSideNavOption === 'Content Guide Lines' || selectedSideNavOption === 'Results' ? "0" : collapsed ? "7.5%" : "16%" }}>
-        <Header style={{ display: 'flex', alignItems: 'center', margin: "0.5%", marginTop: "0.9%", borderRadius: "0.2cm" }}>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <div className="demo-logo" />
-            <h2 style={{ color: "white", margin: 0 }}>
-              <FontAwesomeIcon icon={faBrain} style={{ marginRight: "8px" }} />
-              SpeedIQ
+      <div style={{  marginLeft: screenWidth <= 1000 ? "0" : selectedSideNavOption === 'Content Guide Lines' || selectedSideNavOption === 'Results' ? "0" : collapsed ? "2.5cm" : "5.8cm" }}>
+        <Header style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap', // Allows items to wrap to the next line if needed
+          margin: "0.5%",
+          marginTop: "0.9%",
+          borderRadius: "0.2cm",
+          padding: "10px", // Adds spacing for better appearance on smaller screens
+          paddingTop: "0"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", flex: "1" }}>
+            <h2 style={{ color: "white", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              <FontAwesomeIcon icon={faBrain} style={{ marginRight: "8px" }} />SpeedIQ
             </h2>
           </div>
 
           {!isAdmin && userGuideLinesDone &&
-            <div style={{ marginLeft: "30%" }}>
-              <Timer totalMarks={marks} clickedOnSubmit={clickedOnSubmit} setAutoSubmit={(value) => setAutoSubmit(value)} />
+            <div style={{flex: "1", display: "flex", justifyContent: "center",marginLeft:"-70%"}}>
+              <Timer
+                totalMarks={marks}
+                clickedOnSubmit={clickedOnSubmit}
+                setAutoSubmit={(value) => setAutoSubmit(value)}
+              />
             </div>
           }
 
-          {!isDemo ?
-            <Button type="primary" onClick={handleLogout} style={{ marginLeft: isAdmin || !userGuideLinesDone ? "80%" : "35%" }}>
-              Logout
-            </Button>
-            :
-            <Button type="primary" onClick={handleHomePage} style={{ marginLeft: isAdmin || !userGuideLinesDone ? "80%" : "35%" }}>
-              Home
-            </Button>
-
+          {isAdmin ?
+            <Button
+              icon={<MenuOutlined style={{ fontSize: "15px" }} />}
+              onClick={showDrawer}
+              type='primary'
+              style={{ display: "flex" }}
+            /> :
+            isDemo ?
+              <Button
+                onClick={handleHomePage}
+                type='primary'
+                style={{ display: "flex" }}
+              >
+                Home
+              </Button> :
+              <Button
+                onClick={handleLogout}
+                type='primary'
+                style={{ display: "flex" }}
+              >
+                Logout
+              </Button>
           }
-          {/* <div className="demo-logo" />
-          <h2 style={{ color: "white" }}><FontAwesomeIcon icon={faBrain} style={{ color: "white" }} />SpeedIQ</h2>
-          <Menu
-            theme="dark"
-            mode="horizontal"
-            // defaultSelectedKeys={['1']}
-            // items={[<Timer/>]}
-            style={{ flex: "1", marginLeft: "60%" }}
-          />
-          <Timer/>
-          <Button type='primary' onClick={handleLogout}>Logout</Button> */}
+
+          <Drawer
+            title="Menu"
+            placement="right"
+            onClose={closeDrawer}
+            open={isDrawerVisible}
+            style={{ padding: 0 }}
+          >
+            <Menu mode="vertical" theme='dark' onClick={handleMenuClick} items={admin_side_nav_options} />
+          </Drawer>
+
         </Header>
+
 
         <Layout style={{ margin: "0.5%", marginTop: "0.8%", height: "83vh", borderRadius: "0.2cm", overflow: "scroll" }}>
           {(() => {
@@ -305,9 +358,9 @@ const App = () => {
               case "Bulk Upload Users":
                 return <BulkUploadOfQuestions flag="login" />
               case "Content Guide Lines":
-                return <Content_guideLines timerDone={handleUserguideLinesDone} />
+                return <Content_guideLines screenWidth={screenWidth} timerDone={handleUserguideLinesDone} />
               case "Clear Quiz":
-                return <ClearQuiz/>
+                return <ClearQuiz />
               case "Quiz":
               case "Results":
                 return <QuizPage
@@ -317,6 +370,7 @@ const App = () => {
                   finalOutput={handleFinalOutPutFromQuizPage}
                   clickedOnSubmit={(value) => setClickedOnSubmit(value)}
                   autoSubmit={autoSubmit}
+                  screenWidth={screenWidth}
                 />
               default:
                 return null;

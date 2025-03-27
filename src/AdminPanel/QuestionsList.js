@@ -5,6 +5,7 @@ import { deleteApi, getApi, postApi, putApi } from '../API/AllRequestTypeAPIsLog
 import enums from '../API/ApiList';
 import DataGridTable from "../DataGridTableStructure.js/DataGridTable";
 import { now } from '../DateTime'
+import {openNotification} from "../DataGridTableStructure.js/PopupMessage"
 
 const QuestionsList = () => {
 
@@ -40,7 +41,8 @@ const QuestionsList = () => {
                 deleteAction.then(data => {
                     // console.log("data for deleted user ", data);
                     if (data) {
-                        message.success("User Deleted Successfully")
+                        openNotification("User Deleted Successfully","top","success")
+                        // message.success("User Deleted Successfully")
                         setRequestDone(requestDone + 1)
                     }
                 }).catch(exception => {
@@ -48,7 +50,8 @@ const QuestionsList = () => {
                 })
             },
             onCancel: () => {
-                message.info("Action canceled")
+                openNotification("Action canceled","top","info")
+                // message.info("Action canceled")
                 console.log("Action canceled"); // Handle cancel action here
             },
         });
@@ -182,7 +185,8 @@ const QuestionsList = () => {
             const postQuestionDetails = postApi(enums.BASE_URL + enums.ENDPOINTS.Questions.ADD_QUESTION, requestBody)
             postQuestionDetails.then(data => {
                 // console.log("data ", data)
-                message.success("User added successfully")
+                openNotification("User added successfully","top","success")
+                // message.success("User added successfully")
                 setRequestDone(requestDone + 1)
                 setOpen(false)
             }).catch(exception => {
@@ -192,7 +196,8 @@ const QuestionsList = () => {
             const postQuestionDetails = putApi(enums.BASE_URL + enums.ENDPOINTS.Questions.UPDATE_QUESTION + IdSelected, requestBody)
             postQuestionDetails.then(data => {
                 // console.log("data ", data)
-                message.success("User edited successfully")
+                openNotification("User edited successfully","top","success")
+                // message.success("User edited successfully")
                 setRequestDone(requestDone + 1)
                 setOpen(false)
             }).catch(exception => {
@@ -209,14 +214,16 @@ const QuestionsList = () => {
                 postDetails(); // Pass postDetails as a callback
             },
             onCancel: () => {
-                message.info("Action canceled")
+                openNotification("Action canceled","top","info")
+                // message.info("Action canceled")
                 console.log("Action canceled"); // Handle cancel action here
             },
         });
     }
 
     const handleFinishFailed = () => {
-        message.info("please ensure the requied fields are filled!")
+        openNotification("please ensure the requied fields are filled!","top","info")
+        // message.info("please ensure the requied fields are filled!")
     }
 
     const handleCancel = () => {

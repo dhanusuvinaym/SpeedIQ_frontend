@@ -5,6 +5,7 @@ import { deleteApi, getApi, postApi, putApi } from '../API/AllRequestTypeAPIsLog
 import enums from '../API/ApiList';
 import DataGridTable from "../DataGridTableStructure.js/DataGridTable";
 import { now } from '../DateTime'
+import {openNotification} from '../DataGridTableStructure.js/PopupMessage'
 
 const UserPerformance = () => {
 
@@ -54,7 +55,8 @@ const UserPerformance = () => {
                 setIsOpen(true);
             }
         }).catch(exception => {
-            message.error("Questions fetching by token id is failed")
+            openNotification("Questions fetching by token id is failed","top","error")
+            // message.error("Questions fetching by token id is failed")
             console.error("Exception in getting questions by tokenid", exception)
         })
 
@@ -75,8 +77,10 @@ const UserPerformance = () => {
 
     const UserDetailsColums = [
         { headerName: "Sr.NO", description: "Sr.NO", field: "sno", width: "100", align: "center", headerAlign: "center", align: "center", headerClassName: "headerCellColor", sortable: false },
+        { headerName: "User Name", description: "User Name", field: "username", width: "100", align: "center", headerAlign: "center", align: "center", headerClassName: "headerCellColor", sortable: false },
+        { headerName: "Mobile Number", description: "Mobile Number", field: "mobilenumber", width: "100", align: "center", headerAlign: "center", align: "center", headerClassName: "headerCellColor", sortable: false },
         {
-            headerName: "Token Id", description: "Token Id", field: "tokenid", width: "200", headerAlign: "center", align: "center", headerClassName: "headerCellColor", sortable: false, renderCell: (params) => {
+            headerName: "Token Id", description: "Token Id", field: "tokenid", width: "100", headerAlign: "center", align: "center", headerClassName: "headerCellColor", sortable: false, renderCell: (params) => {
                 return (
                     <div>
                         <a style={{ fontFamily: "bold", color: "#1677ff", fontSize: "medium", fontStyle: "sans-sirf" }} onClick={() => handleTokenClick(params.value)}>{params.value}</a>
@@ -85,7 +89,7 @@ const UserPerformance = () => {
             }
         },
         {
-            headerName: "Score", description: "Score", field: "score", width: "150", align: "center", headerAlign: "center", headerClassName: "headerCellColor", sortable: false
+            headerName: "Score", description: "Score", field: "score", width: "100", align: "center", headerAlign: "center", headerClassName: "headerCellColor", sortable: false
             //  renderCell: (params) => {
             //     return (
             //         <HistoryStatusStickers processId={params.value} />
@@ -93,7 +97,7 @@ const UserPerformance = () => {
             // }
         },
         {
-            headerName: "Exam Duration", description: "Exam Duration", field: "examDurationTime", width: "220", align: "center", headerAlign: "center", headerClassName: "headerCellColor", sortable: false, valueFormatter: (value, row, column, apiRef) => {
+            headerName: "Exam Duration", description: "Exam Duration", field: "examDurationTime", width: "150", align: "center", headerAlign: "center", headerClassName: "headerCellColor", sortable: false, valueFormatter: (value, row, column, apiRef) => {
                 // console.log("Value = ", value)
                 if (value) {
                     return value; // Return the formatted duration string (e.g., "01:23:45.678")

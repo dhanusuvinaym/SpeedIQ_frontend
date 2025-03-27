@@ -1,53 +1,81 @@
+import { faBrain } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Button } from 'antd';
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { postApi } from '../API/AllRequestTypeAPIsLogic';
 import enums from '../API/ApiList';
-import { message, Button } from 'antd';
 import { setCookie } from "../Cookies/GetCookies";
-import { faBrain } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Content_guideLines_Login_page from '../UserPanel/Content_guideLines_login_page'
+import { openNotification } from '../DataGridTableStructure.js/PopupMessage';
+import Content_guideLines_Login_page from '../UserPanel/Content_guideLines_login_page';
 
 function LoginPage() {
   const [username, setUsername] = useState(null);
+  const [mobilenumber, setMobileNumber] = useState(null);
   const [token, setToken] = useState("");
   const navigate = useNavigate();
   const [action, setAction] = useState(null);
   const [adminUsername, setAdminUserName] = useState(null);
   const [password, setPassword] = useState(null);
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  // console.log("Width", screenWidth);
 
 
   const handleLogin = (e) => {
     e.preventDefault();
 
     if (!token && !username) {
-      message.error("Please input the credentials properly!");
+      openNotification("Please input the credentials properly!", "top", "error")
+      // message.error("Please input the credentials properly!");
       return;
     }
 
     if (!token) {
-      message.error("Token is required!");
+      openNotification("Token is required!", "top", "error")
+      // message.error("Token is required!");
       return;
     }
 
     if (!username) {
-      message.error("Please insert the mobile number properly!");
+      openNotification("Please insert the user name properly!", "top", "error")
+      // message.error("Please insert the mobile number properly!");
+      return;
+    }
+
+    if (!mobilenumber) {
+      openNotification("Please insert the mobile number properly!", "top", "error")
+      // message.error("Please insert the mobile number properly!");
       return;
     }
 
     if (token.length !== 6) {
-      message.error("Token must be 6 characters!");
+      openNotification("Token must be 6 characters!", "top", "error")
+      // message.error("Token must be 6 characters!");
       return;
     }
 
-    if (username.length !== 10) {
-      message.error("Mobile number should be 10 Characters!");
+    if (mobilenumber.length !== 10) {
+      openNotification("Mobile number should be 10 Characters!", "top", "error")
       return;
     }
 
     var data = {
       id: null,
       username: username,
+      mobilenumber: mobilenumber,
       tokenId: token,
       isadmin: null,
       isvalid: null,
@@ -67,15 +95,18 @@ function LoginPage() {
         setCookie("jwtToken", data?.jwtToken)
         setCookie("isdemo", false)
         setCookie("username", username)
+        setCookie("mobilenumber", mobilenumber)
         // document.cookie = `tokenId=${data.tokenId}; path=/;`;
         // document.cookie = `isadmin=${data.isadmin}; path=/;`;
         // document.cookie = `id=${data.id}; path=/;`;
       } else {
-        message.error("The credentials has been expired! Please Contact administrator..");
+        openNotification("The credentials has been expired! Please Contact administrator..", "top", "error")
+        // message.error("The credentials has been expired! Please Contact administrator..");
       }
     })
       .catch(err => {
-        message.error("Exception while logging in", err?.response?.data);
+        openNotification("Exception while logging in" + err?.response?.data, "top", "error")
+        // message.error("Exception while logging in", err?.response?.data);
       });
 
     // console.log("Token ID:", token);
@@ -91,7 +122,8 @@ function LoginPage() {
     validateAdmin.then(data => {
       if (data) {
         // console.log("Data from the admin ", data);
-        message.success("Logined Successfully!")
+        openNotification("Logined Successfully!", "top", "success")
+        // message.success("Logined Successfully!")
         navigate("/nav");
         setCookie("password", data?.password)
         setCookie("isadmin", true)
@@ -102,10 +134,12 @@ function LoginPage() {
         setCookie("username", adminUsername)
 
       } else {
-        message.error("Please check the credentials!")
+        openNotification("Please check the credentials!", "top", "error")
+        // message.error("Please check the credentials!")
       }
     }).catch(exception => {
-      message.error("Please check the credentials!")
+      openNotification("Please check the credentials!", "top", "error")
+      // message.error("Please check the credentials!")
       console.error("exception = ", exception)
     })
 
@@ -121,119 +155,161 @@ function LoginPage() {
     navigate("/nav");
   }
 
+  const handleBack = () => {
+    setAction(null);
+  }
+
+  // const handleDummy = () => {
+  //   openNotification("hello", "top", "info")
+  // }
+
   return (
-    <div style={{ textAlign: "center", height: "12cm", padding: "5%" }}>
-      <div style={{ width: "50%", backgroundColor: "black", height: "100%", marginLeft: "25%", borderRadius: "1cm", padding: "2%" }}>
-        <h2 style={{ color: "white", fontFamily: "inherit" }}>
-          <FontAwesomeIcon icon={faBrain} style={{ marginRight: "8px", color: "#1677ff" }} />
-          SpeedIQ
-        </h2>
-        {action === null &&
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
-            <Button
-              onClick={() => handleAction('admin')}
-              style={{ marginTop: "5%", width: "5cm" }}
-              type="primary"
-            >
-              Login as Admin
-            </Button>
-
-            <Button
-              onClick={() => handleAction('user')}
-              style={{ marginTop: "5%", width: "5cm" }}
-              type="primary"
-            >
-              Take a Quiz
-            </Button>
-
-            <Button
-              onClick={handleClickOnDemo}
-              style={{ marginTop: "5%", width: "5cm" }}
-              type="primary"
-            >
-              Take a Demo
-            </Button>
-          </div>
-        }
-
-
-        {action === 'admin' &&
-          <form onSubmit={handleAdminLogin}>
-            <div style={{ marginBottom: "20px", marginTop: "5%", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
-              <input
-                type="text"
-                placeholder="Username"
-                value={adminUsername}
-                onChange={(e) => setAdminUserName(e.target.value)}
+    <div style={{ textAlign: "center", padding: screenWidth > 500 ? "5%" : "1%" }}>
+      <center>
+        <div style={{ width: screenWidth > 500 ? "50%" : "100%", backgroundColor: "black", height: "100%", borderRadius: "0.5cm", padding: "2%", marginTop: screenWidth > 500 ? "0" : "15%" }}>
+          <h2 style={{ color: "white", fontFamily: "inherit", marginBottom: "10%", fontSize: "30px" }}>
+            <span> <FontAwesomeIcon icon={faBrain} style={{ color: "#1677ff" }} /> SpeedIQ</span>
+          </h2>
+          {action === null &&
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "30px" }}>
+              <Button
+                onClick={() => handleAction('admin')}
                 style={{
-                  padding: "10px",
-                  width: "5cm",
-                  boxSizing: "border-box",
+                  width: screenWidth > 500 ? "5cm" : "70%",
                 }}
-              />
-              <input
-                type="text"
-                placeholder="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  padding: "10px",
-                  width: "5cm",
-                  boxSizing: "border-box",
-                }}
-              />
+                type="primary"
+              >
+                Login as Admin
+              </Button>
+
+              <Button
+                onClick={() => handleAction('user')}
+                style={{ width: screenWidth > 500 ? "5cm" : "70%" }}
+                type="primary"
+              >
+                Take a Quiz
+              </Button>
+
+              <Button
+                onClick={handleClickOnDemo}
+                style={{ width: screenWidth > 500 ? "5cm" : "70%" }}
+                type="primary"
+              >
+                Take a Demo
+              </Button>
             </div>
-            <Button
-              onClick={handleAdminLogin}
-              style={{ marginTop: "1%", width: "5cm" }}
-              htmlType="submit"
-              type="primary"
-            >
-              Login
-            </Button>
-          </form>
-        }
+          }
 
-        {action === 'user' &&
-          <form onSubmit={handleLogin}>
-            <div style={{ marginBottom: "20px", marginTop: "5%", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
-              <input
-                type="number"
-                placeholder="Mobile Number"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                style={{
-                  padding: "10px",
-                  width: "5cm",
-                  boxSizing: "border-box",
-                }}
-              />
-              <input
-                type="text"
-                placeholder="6-digit Token ID"
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                style={{
-                  padding: "10px",
-                  width: "5cm",
-                  boxSizing: "border-box",
-                }}
-              />
-            </div>
-            <Button
-              onClick={handleLogin}
-              style={{ marginTop: "1%", width: "5cm" }}
-              htmlType="submit"
-              type="primary"
-            >
-              Start Test
-            </Button>
-          </form>
-        }
 
-        <Content_guideLines_Login_page />
+          {action === 'admin' &&
+            <form onSubmit={handleAdminLogin}>
+              <div style={{ marginBottom: "20px", marginTop: "5%", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={adminUsername}
+                  onChange={(e) => setAdminUserName(e.target.value)}
+                  style={{
+                    padding: "10px",
+                    width: screenWidth > 500 ? "5cm" : "70%",
+                    boxSizing: "border-box",
+                  }}
+                />
+                <input
+                  type="password"
+                  placeholder="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{
+                    padding: "10px",
+                    width: screenWidth > 500 ? "5cm" : "70%",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: "20px", marginTop: "5%", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                <Button
+                  onClick={handleAdminLogin}
+                  style={{ marginTop: "1%", width: screenWidth > 500 ? "5cm" : "70%" }}
+                  htmlType="submit"
+                  type="primary"
+                >
+                  Login
+                </Button>
+                <Button
+                  onClick={handleBack}
+                  style={{ marginTop: "1%", width: screenWidth > 500 ? "5cm" : "70%" }}
+                // type="primary"
+                >
+                  back
+                </Button>
+              </div>
+            </form>
+          }
 
-      </div>
+          {action === 'user' &&
+            <form onSubmit={handleLogin}>
+              <div style={{ marginBottom: "20px", marginTop: "5%", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                <input
+                  type="text"
+                  placeholder="User Name"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  style={{
+                    padding: "10px",
+                    width: screenWidth > 500 ? "5cm" : "70%",
+                    boxSizing: "border-box",
+                  }}
+                />
+                <input
+                  type="number"
+                  placeholder="Mobile Number"
+                  value={mobilenumber}
+                  onChange={(e) => setMobileNumber(e.target.value)}
+                  style={{
+                    padding: "10px",
+                    width: screenWidth > 500 ? "5cm" : "70%",
+                    boxSizing: "border-box",
+                  }}
+                />
+                <input
+                  type="password"
+                  placeholder="6-digit Token ID"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  style={{
+                    padding: "10px",
+                    width: screenWidth > 500 ? "5cm" : "70%",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: "20px", marginTop: "5%", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                <Button
+                  onClick={handleLogin}
+                  style={{ marginTop: "1%", width: screenWidth > 500 ? "5cm" : "70%" }}
+                  htmlType="submit"
+                  type="primary"
+                >
+                  Start Test
+                </Button>
+                <Button
+                  onClick={handleBack}
+                  style={{ marginTop: "1%", width: screenWidth > 500 ? "5cm" : "70%" }}
+                // type="primary"
+                >
+                  back
+                </Button>
+              </div>
+            </form>
+          }
+
+          <Content_guideLines_Login_page />
+
+        </div>
+      </center>
+
+      {/* <Button onClick={handleDummy}>Dummy</Button> */}
     </div>
   );
 }

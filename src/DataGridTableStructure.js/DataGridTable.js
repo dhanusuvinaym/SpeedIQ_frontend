@@ -1,4 +1,4 @@
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid ,GridToolbar} from '@mui/x-data-grid';
 import React from 'react';
 
 const DataGridTable = ({ columns, rows, height, initialSortingField, initialSortingType }) => {
@@ -61,7 +61,8 @@ const DataGridTable = ({ columns, rows, height, initialSortingField, initialSort
                 },
             }}
             // slots={slots_For_History_Table}
-            slotProps={{ toolbar: { printOptions: { disableToolbarButton: true } } }}//, csvOptions: { disableToolbarButton: true } 
+            slots={{ toolbar: GridToolbar }}
+            // slotProps={{ toolbar: { printOptions: { disableToolbarButton: false } } }}//, csvOptions: { disableToolbarButton: true } 
             showCellVerticalBorder
             showColumnVerticalBorder
             initialState={{

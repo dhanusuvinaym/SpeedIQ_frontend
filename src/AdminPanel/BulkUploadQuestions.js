@@ -5,6 +5,7 @@ import { postApi } from "../API/AllRequestTypeAPIsLogic";
 import enums from "../API/ApiList";
 import axios from "axios";
 import { getCookie } from "../Cookies/GetCookies";
+import {openNotification} from '../DataGridTableStructure.js/PopupMessage'
 
 const { Dragger } = Upload;
 
@@ -17,7 +18,8 @@ function BulkUploadOfQuestions(props) {
   const handleFileUpload = (info) => {
     const fileList = info.fileList;
     if (fileList.length > 1) {
-      message.error("You can't upload more than one file");
+      openNotification("You can't upload more than one file","top","error")
+      // message.error("You can't upload more than one file");
       setFileList([]);
     } else {
       const uploadedFile = info.file.originFileObj;
@@ -34,7 +36,8 @@ function BulkUploadOfQuestions(props) {
 
   const handleSubmit = () => {
     if (!file) {
-      message.info("Please upload a file")
+      openNotification("Please upload a file","top","info")
+      // message.info("Please upload a file")
       return;
     }
 
@@ -46,12 +49,14 @@ function BulkUploadOfQuestions(props) {
         if (data) {
           // console.log("Questions bulk data", data)
           setLoading(false);
-          message.success("Bulk upload of Questions operation was success")
+          openNotification("Bulk upload of Questions operation was success","top","success")
+          // message.success("Bulk upload of Questions operation was success")
           setFile(null);
           setFileList([]);
         }
       }).catch(exception => {
-        message.error(exception?.response?.data?.message);
+        openNotification(exception?.response?.data?.message,"top","error")
+        // message.error(exception?.response?.data?.message);
         setLoading(false);
         console.error("Error in uploading the bulk questions ", exception)
       })

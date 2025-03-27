@@ -5,6 +5,7 @@ import { message, Form, Button, Input, Modal } from "antd";
 import { DeleteFilled, PlusCircleFilled, EditFilled } from "@ant-design/icons";
 import DataGridTable from "../DataGridTableStructure.js/DataGridTable";
 import { deleteApi } from "../API/AllRequestTypeAPIsLogic";
+import { openNotification } from "../DataGridTableStructure.js/PopupMessage";
 
 const AdminList = () => {
 
@@ -31,10 +32,12 @@ const AdminList = () => {
 
                 setAdminDetails(temp);
             } else {
-                message.error("Exception while fetching the details")
+                openNotification("Exception while fetching the details","top","error")
+                // message.error("Exception while fetching the details")
             }
         }).catch(Exception => {
-            message.error("Exception while fetching the details ", Exception)
+            openNotification("Exception while fetching the details "+ Exception,"top","error")
+            // message.error("Exception while fetching the details ", Exception)
             console.error("Exception while fetching the admin details ", Exception);
         })
     }, [requestDone])
@@ -65,7 +68,8 @@ const AdminList = () => {
                 deleteAction.then(data => {
                     // console.log("data for deleted user ", data);
                     if (data) {
-                        message.success("Admin Deleted Successfully")
+                        openNotification("Admin Deleted Successfully","top","success")
+                        // message.success("Admin Deleted Successfully")
                         setRequestDone(requestDone + 1)
                     }
                 }).catch(exception => {
@@ -75,7 +79,8 @@ const AdminList = () => {
             },
             onCancel: () => {
                 // console.log("Action canceled"); // Handle cancel action here
-                message.info("Action Cancelled")
+                // message.info("Action Cancelled")
+                openNotification("Action Cancelled","top","info")
             },
         });
     }
@@ -185,17 +190,21 @@ const AdminList = () => {
                         if (data) {
                             setRequestDone(requestDone + 1);
                             setIsOpen(false);
-                            message.success("Admin created successfully");
+                            openNotification("Admin created successfully","top","success")
+                            // message.success("Admin created successfully");
                         } else {
-                            message.error("Exception while fetching the details")
+                            openNotification("Exception while fetching the details","top","error")
+                            // message.error("Exception while fetching the details")
                         }
                     }).catch(exception => {
-                        message.error(exception?.response?.data?.error);
+                        openNotification(exception?.response?.data?.error,"top","error")
+                        // message.error(exception?.response?.data?.error);
                         console.error("exception while getting the error ", exception);
                     })
                 },
                 onCancel: () => {
-                    message.info("Admin is not created")
+                    openNotification("Admin is not created","top","info")
+                    // message.info("Admin is not created")
                 }
             })
         } else {
@@ -208,17 +217,21 @@ const AdminList = () => {
                         if (data) {
                             setRequestDone(requestDone + 1);
                             setIsOpen(false);
-                            message.success("Admin edited successfully");
+                            openNotification("Admin edited successfully","top","success")
+                            // message.success("Admin edited successfully");
                         } else {
-                            message.error("Exception while fetching the details")
+                            openNotification("Exception while fetching the details","top","error")
+                            // message.error("Exception while fetching the details")
                         }
                     }).catch(exception => {
-                        message.error(exception?.response?.data?.error);
+                        openNotification(exception?.response?.data?.error,"top","error")
+                        // message.error(exception?.response?.data?.error);
                         console.error("exception while getting the error ", exception);
                     })
                 },
                 onCancel: () => {
-                    message.info("Admin is not created")
+                    openNotification("Admin is not created","top","info")
+                    // message.info("Admin is not created")
                 }
             })
         }

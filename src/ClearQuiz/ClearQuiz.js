@@ -1,7 +1,8 @@
-import { Button, message, Modal } from "antd";
+import { Button, Modal } from "antd";
 import React from "react";
 import { getApi } from "../API/AllRequestTypeAPIsLogic";
 import enums from "../API/ApiList";
+import { openNotification } from '../DataGridTableStructure.js/PopupMessage';
 
 const ClearQuiz = () => {
 
@@ -25,31 +26,37 @@ const ClearQuiz = () => {
                             const loginDataDelete = getApi(enums.BASE_URL + enums.ENDPOINTS.LOGIN.DELELETALL)
                             loginDataDelete.then(data3 => {
                                 // console.log("data after delete  analysis = ", data3);
-                                message.success("Quiz Data Cleared Successfully")
+                                openNotification("Quiz Data Cleared Successfully", "top", "success")
+                                // message.success("Quiz Data Cleared Successfully")
 
                             }).catch(exception => {
+                                openNotification("Error while deleteing login data", "top", "error")
                                 console.error(exception);
-                                message.error("Error while deleteing login data");
+                                // message.error("Error while deleteing login data");
                             })
 
                         }).catch(exception => {
                             console.error(exception);
-                            message.error("Error while deleteing questions data");
+                            openNotification("Error while deleteing questions data", "top", "error")
+                            // message.error("Error while deleteing questions data");
                         })
 
                     }).catch(exception => {
                         console.error(exception);
-                        message.error("Error while deleteing analysis data");
+                        openNotification("Error while deleteing analysis data", "top", "error")
+                        // message.error("Error while deleteing analysis data");
                     })
 
 
                 }).catch(exception => {
                     console.error(exception);
-                    message.error("Error while deleteing userperformace data");
+                    openNotification("Error while deleteing userperformace data", "top", "error")
+                    // message.error("Error while deleteing userperformace data");
                 })
             },
             onCancel: () => {
-                message.info("Delete Action has been canceled")
+                openNotification("Delete Action has been canceled", "top", "info")
+                // message.info("Delete Action has been canceled")
             }
         })
     }

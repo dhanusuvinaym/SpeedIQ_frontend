@@ -1,4 +1,5 @@
-var base_url = "http://localhost:8083"
+// var base_url = "http://localhost:8083"
+var base_url = "http://3.107.201.205:8080"
 
 const enums = {
     BASE_URL: base_url,

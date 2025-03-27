@@ -6,7 +6,7 @@ import { getApi, inVallidateUser, postApi } from "../API/AllRequestTypeAPIsLogic
 import enums from "../API/ApiList";
 import { clearCookies, getCookie, setCookie } from "../Cookies/GetCookies";
 import { formatDuration, now } from '../DateTime';
-
+import { openNotification } from '../DataGridTableStructure.js/PopupMessage'
 
 const QuizPage = (props) => {
 
@@ -28,6 +28,7 @@ const QuizPage = (props) => {
     const autoSubmit = props.autoSubmit
     const isDemo = getCookie("isdemo") === 'true'
     const hasSubmitted = useRef(false);
+    const screenWidth = props.screenWidth
 
 
     useEffect(() => {
@@ -48,7 +49,9 @@ const QuizPage = (props) => {
                 handleSubmit();
                 hasSubmitted.current = true;
             }
-            handleprevNextAction('N')
+            setTimeout(() => {
+                handleprevNextAction('N')
+            }, 500)
         }
     }, [answers])
 
@@ -159,8 +162,8 @@ const QuizPage = (props) => {
                                 // console.log("response for postRequestForUserPerformancesis body ", data);
                                 // message.success("user performance api done")
                                 inVallidateUser();
-
-                                message.success("Test submitted Successfully")
+                                openNotification("Test submitted Successfully", "top", "success")
+                                // message.success("Test submitted Successfully")
 
                             }).catch(exception => {
                                 console.error("exception e ", exception);
@@ -197,7 +200,8 @@ const QuizPage = (props) => {
                         },
                         onCancel: () => {
                             if (!isDemo) {
-                                message.success("Logged Out SuccessFully")
+                                openNotification("Logged Out SuccessFully", "top", "success")
+                                // message.success("Logged Out SuccessFully")
                                 navigate("/")
                             } else {
                                 clearCookies();
@@ -208,7 +212,8 @@ const QuizPage = (props) => {
 
                 },
                 onCancel: () => {
-                    message.info("Exam not submitted")
+                    openNotification("Exam not submitted", "top", "info")
+                    // message.info("Exam not submitted")
                 }
             })
         } else {
@@ -278,7 +283,8 @@ const QuizPage = (props) => {
                 onCancel: () => {
                     if (!isDemo) {
                         inVallidateUser();
-                        message.success("Logged Out SuccessFully")
+                        openNotification("Logged Out SuccessFully", "top", "success")
+                        // message.success("Logged Out SuccessFully")
                         navigate("/")
                     } else {
                         clearCookies();
@@ -379,16 +385,52 @@ const QuizPage = (props) => {
                         </div>
                     </div>
 
-                    <div style={{ marginLeft: "5%", marginTop: "8%" }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: screenWidth > 500 ? "row" : "column", // Default direction for larger screens
+                            flexWrap: "wrap", // Allows wrapping when necessary
+                            justifyContent: "center",
+                            alignItems: "center",
+                            // marginLeft: "5%",
+                            marginTop: "8%"
+                        }}
+                        className="responsive-buttons-container"
+                    >
+                        <Button
+                            style={{ width: "5cm", margin: "5px" }}
+                            disabled={questionSelected === 0}
+                            onClick={() => handleChangeInPagination('P')}
+                        >
+                            {"<"} Previous
+                        </Button>
+                        <Button
+                            type="primary"
+                            style={{ width: "5cm", margin: "5px" }}
+                            onClick={() => handleChangeInPagination('N')}
+                            disabled={questionSelected === questionData.length - 1}
+                        >
+                            Next {">"}
+                        </Button>
+                        <Button
+                            style={{
+                                width: "5cm",
+                                margin: "5px",
+                                backgroundColor: "red",
+                                color: "white",
+                                fontWeight: "bold"
+                            }}
+                            onClick={() => handleSubmit()}
+                        >
+                            Submit Test
+                        </Button>
+                    </div>
+
+
+                    {/* <div style={{ marginLeft: "5%", marginTop: "8%" }}>
                         <Button style={{ width: "5cm" }} disabled={questionSelected === 0} onClick={() => handleChangeInPagination('P')}>
                             {"<"} Previous
                         </Button>
-                        {/* <Button style={{ marginLeft: "5%", width: "5cm" }}>
-                            Clear Response
-                        </Button>
-                        <Button style={{ marginLeft: "5%", width: "5cm", backgroundColor: "green", color: "white" }}>
-                            Submit Response
-                        </Button> */}
                         <Button type="primary" style={{ marginLeft: "5%", width: "5cm" }} onClick={() => handleChangeInPagination('N')} disabled={questionSelected === (questionData.length - 1)}>
                             Next {">"}
                         </Button>
@@ -396,7 +438,7 @@ const QuizPage = (props) => {
                         <Button style={{ marginLeft: "5%", width: "5cm", backgroundColor: "red", color: "white", fontWeight: "bold" }} onClick={() => handleSubmit()}>
                             Submit Test
                         </Button>
-                    </div>
+                    </div> */}
                 </div>
             }
             {showResults &&
