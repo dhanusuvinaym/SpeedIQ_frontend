@@ -9,7 +9,7 @@ const enums = {
             CREATE: "/api/admin/create",
             DELETE: "/api/admin/", // {id} need to provide
             UPDATE: "/api/admin/", // {id} need to provide
-            GETALL: "/api/admin/getAll"
+            GETALL: "/api/admin/getAll",
         },
         LOGIN: {
             VALIDATE: "/api/login/validate",
@@ -18,7 +18,7 @@ const enums = {
             DELETE: "/api/login/delete/",//{id} to be placed,
             BULKUPLOAD: "/api/login/upload",
             GET_ALL_LOGIN_DETAILS: "/api/login/getAll",
-            DELELETALL:"/api/login/deleteAll"
+            DELELETALL:"/api/login/deleteAll",
         },
         Questions: {
             GET_RANDOM_QUESTIONS: "/api/questions/getRandom",
@@ -27,7 +27,7 @@ const enums = {
             BULKUPLOAD: "/api/questions/upload",
             ADD_QUESTION: "/api/questions/add",
             GET_ALL_QUESTIONS: "/api/questions/getAll",
-            DELELETALL:"/api/questions/deleteAll"
+            DELELETALL:"/api/questions/deleteAll",
         },
         USERS_PERFORMANCE: {
             SAVE_DETAILS: "/api/userperformance/save", // Get all posts
@@ -36,12 +36,19 @@ const enums = {
             GET_SINGLE_USER: "/api/userperformance/get/",//{id} to be placed
             GET_ALL_USERS: "/api/userperformance/getAll",
             GET_ALL_QUESTIONS_BY_TOKEN_ID: "/api/userperformance/getQuestionsByTokenId/",//{tokenid} need to add
-            DELELETALL:"/api/userperformance/deleteAll"
+            DELELETALL:"/api/userperformance/deleteAll",
         },
         ANALYSIS: {
             SAVE: "/api/analysis/save/",//{id need to provide}
             GET_ALL_ANALYSIS_BASED_ON_ID: "/api/analysis/getAll/",//{id need to provide}
-            DELELETALL:"/api/analysis/deleteAll"
+            DELELETALL:"/api/analysis/deleteAll",
+        },
+        CONTENTGUIDELINES:{
+            GETALL: "/api/guidelines/getAll",
+            INSERT:"/api/guidelines/insert",
+            UPDATE:"/api/guidelines/", //{id} need to be inserted
+            DELETE:"/api/guidelines/",//{id} need to be inserted
+            GETCONTENTBYID:"/api/guidelines/getById/", //{id} need to be insert
         }
     },
 };

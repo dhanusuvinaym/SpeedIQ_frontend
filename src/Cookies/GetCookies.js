@@ -27,7 +27,7 @@ export function clearCookies() {
 };
 
 export function setCookie(cookieName, value) {
-    const fortyFiveMinutesInSeconds = 24 * 60 * 60;
+    const oneday = 24 * 60 * 60;
     const encodedValue = encodeBase64(value);
-    document.cookie = `${cookieName}=${encodedValue}; path=/; max-age=${fortyFiveMinutesInSeconds}`;
+    document.cookie = `${cookieName}=${encodedValue}; path=/; max-age=${oneday}`;
 };

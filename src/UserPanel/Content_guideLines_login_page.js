@@ -1,65 +1,143 @@
 
-import { message, Modal } from "antd";
-import React from "react";
-import {openNotification} from "../DataGridTableStructure.js/PopupMessage"
+import { Modal, Button, Input } from "antd";
+import React, { useState, useEffect } from "react";
+import { openNotification } from "../DataGridTableStructure.js/PopupMessage"
+import { getApi, putApi } from '../API/AllRequestTypeAPIsLogic'
+import enums from "../API/ApiList";
+import { QuestionOutlined, CopyrightOutlined } from '@ant-design/icons'
 
-const Content_guideLines_Login_page = () => {
+
+const Content_guideLines_Login_page = (props) => {
+    const selectedKey = props.selectedKey
+    const [contentData, setContentData] = useState("");
+    const [helpData, setHelpData] = useState("");
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editedContent, setEditedContent] = useState("");
+    const [selectedButton, setSelectedButton] = useState("C")
+
+    useEffect(() => {
+        const tempData = getApi(enums.BASE_URL + enums.ENDPOINTS.CONTENTGUIDELINES.GETALL)
+        tempData.then(data => {
+            // console.log("Content Data ", data)
+            if (data[0].id == 1) {
+                setContentData(data[0]);
+                setHelpData(data[1])
+            } else {
+                setContentData(data[1]);
+                setHelpData(data[0])
+            }
+        }).catch(exception => {
+            console.error("Getting exception while getting the content and guidelines", exception)
+        })
+    }, [])
 
     const showModal = () => {
         Modal.info({
-            width: "60%",
-            height:"50%",
             title: "Quiz Guidelines and Terms",
-            content: (
-                <div style={{ textAlign: "left" }}>
-                    <h3>I. Eligibility and Registration:</h3>
-                    <ul>
-                        <li> Age: 18.</li>
-                        <li> Location: India.</li>
-                        <li> Registration: User needs to provide a valid mobile number and name. For one registration, the quiz can be taken only once.</li>
-                        <li> Multiple Registrations: Multiple registrations from the same participant are allowed as every registration will generate a different question paper.</li>
-                        <li> Disqualification: Test can be submitted within 30 minutes after starting the quiz. If time expires, the quiz will be submitted automatically.</li>
-                    </ul>
-
-                    <h3>II. Quiz Format and Rules:</h3>
-                    <ul>
-                        <li> Quiz Type: Multiple choice, open-ended.</li>
-                        <li> Number of Questions: 10 questions for 30 minutes.</li>
-                        <li> Question Topics: General aptitude, logic reasoning, general awareness, sports and games, helpful for interview/competitive exams.</li>
-                        <li> Scoring: Each correct answer gets 1 mark. No penalties for incorrect answers. Unanswered questions will receive 0 marks after 30 minutes.</li>
-                        <li> Allowed Devices: Computers, mobile phones.</li>
-                        <li> Communication: Participants may communicate with each other or use external resources.</li>
-                        <li> Disqualification: Cheating or violating rules may result in disqualification.</li>
-                    </ul>
-
-                    <h3>III. Prizes and Awards:</h3>
-                    <ul>
-                        <li> Prizes: Winner will receive a certificate from SpeedIQ (soft copy) and Rs. 5000.</li>
-                        <li> Winner Selection: Based on the highest score with the least time taken.</li>
-                        <li> Prize Distribution: Certificates will be sent to the winner's mobile via WhatsApp and prize money will be paid through UPI.</li>
-                    </ul>
-
-                    <h3>IV. Disclaimers and Legal:</h3>
-                    <ul>
-                        <li> Organizers' Responsibility: Organizers will resolve technical issues during the quiz.</li>
-                        <li> Data Privacy: Participant data will be stored only until the quiz context period. Once winners are announced, data will be erased after a week.</li>
-                        <li> Organizer's Right to Change: Organizers can change terms and conditions with reasonable notice.</li>
-                        <li> Contact Information: Mobile Number: XXXXXXX, Mail ID: XXXXXXXXX@gmail.com.</li>
-                    </ul>
-                </div>
-            ),
-            onOk() {
-                openNotification("Closed Content and guidelines","top","info")
-                // message.info("Modal Closed")
-                // console.log("Modal Closed");
-            },
-            closable: true, // Optional: Adds a close button to the top-right corner
+            content: <div style={{ textAlign: "left" }} dangerouslySetInnerHTML={{ __html: contentData?.content?.replace(/\n/g, '<br>') }} />,
+            width: "60%",
+            closable: true,
         });
     };
 
+    const toggleEditMode = () => {
+        setIsEditMode(!isEditMode);
+        if (selectedButton === 'C') {
+            setEditedContent(contentData?.content);
+        } else {
+            setEditedContent(helpData?.content)
+        }
+    };
+
+    const handleSave = () => {
+
+        const requestJson = {
+            content: editedContent
+        }
+
+        const tempData = putApi(enums.BASE_URL + enums.ENDPOINTS.CONTENTGUIDELINES.UPDATE + contentData.id, JSON.stringify(requestJson))
+        tempData.then(data => {
+            openNotification("Content Updated Successfully", "top", "success")
+        }).catch(exception => {
+            openNotification("Exception while updating content data", "top", "error")
+            console.error("Getting exception while getting the content and guidelines", exception)
+        })
+
+        var temp = {
+            id: 1,
+            content: editedContent
+        }
+        if (selectedButton === 'C') {
+            setContentData(temp);
+        } else {
+            setHelpData(temp)
+        }
+        setIsEditMode(false);
+    };
+
+
     return (
-        <div style={{marginTop:"0.5cm"}}>
-            <a style={{color:"#1677ff",cursor:"pointer"}} onClick={showModal}>Terms & Condtions</a>
+        <div style={{ marginTop: "0.5cm", padding: "1%" }}>
+            {selectedKey ?
+                <>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <div style={{ display: "flex" }}>
+                            <Button style={{}} type={selectedButton === 'C' ? "primary" : ""} onClick={() => setSelectedButton('C')}  disabled={selectedButton === 'H' && isEditMode}>Content And Guide Lines</Button>
+                            <Button style={{ marginLeft: "3%" }} type={selectedButton === 'H' ? "primary" : ""} disabled={selectedButton === 'C' && isEditMode} onClick={() => setSelectedButton('H')}>Help</Button>
+                        </div>
+
+                        <div style={{}}>
+                            {!isEditMode ?
+                                <Button onClick={toggleEditMode} type="primary">Edit</Button>
+                                :
+                                <div style={{ display: "flex", gap: "3%" }}>
+                                    <Button style={{ marginLeft: "-5%" }} onClick={toggleEditMode}>Cancel</Button>
+                                    <Button type="primary" onClick={handleSave}>Save</Button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div style={{ backgroundColor: "white", height: "90%", marginLeft: "", marginTop: "0.1cm", borderRadius: "0.5cm" }}>
+                        {selectedButton === 'C' ?
+                            !isEditMode ?
+                                <div
+                                    style={{ textAlign: "left", height: "100%", overflow: "scroll", padding: "1%" }}
+                                    dangerouslySetInnerHTML={{
+                                        __html: contentData?.content?.replace(/\n/g, "<br>"),
+                                    }}
+                                /> :
+                                <Input.TextArea
+                                    rows={18}
+                                    value={editedContent}
+                                    onChange={(e) => setEditedContent(e.target.value)}
+                                    style={{ width: "100%" }}
+                                />
+                            :
+                            <div style={{ textAlign: "left", height: "100%", padding: "1%" }}>
+                                {!isEditMode ?
+                                    <div style={{ marginTop: "0.5cm" }}>
+                                        <span>Help Link = <a href={helpData?.content} target="_blank">{helpData?.content}</a></span>
+                                    </div>
+                                    :
+                                    <Input value={editedContent} onChange={(e) => setEditedContent(e.target.value)} disabled={!isEditMode} />
+                                }
+                            </div>
+                        }
+                    </div>
+                </>
+                :
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <div>
+                        <a style={{ color: "#1677ff", cursor: "pointer" }} onClick={showModal}><CopyrightOutlined style={{ fontSize: "15px" }} /> Terms & Condtions</a>
+                    </div>
+
+                    <div>
+                        <a style={{ color: "#1677ff", cursor: "pointer" }} href={helpData?.content} target="_blank">Help<QuestionOutlined style={{ fontSize: "15px" }} /></a>
+                    </div>
+                </div>
+            }
+
+
         </div>
     )
 };

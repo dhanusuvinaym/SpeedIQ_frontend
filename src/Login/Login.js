@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { postApi } from '../API/AllRequestTypeAPIsLogic';
 import enums from '../API/ApiList';
-import { setCookie } from "../Cookies/GetCookies";
+import { clearCookies, setCookie } from "../Cookies/GetCookies";
 import { openNotification } from '../DataGridTableStructure.js/PopupMessage';
 import Content_guideLines_Login_page from '../UserPanel/Content_guideLines_login_page';
 
@@ -18,6 +18,15 @@ function LoginPage() {
   const [adminUsername, setAdminUserName] = useState(null);
   const [password, setPassword] = useState(null);
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  const [count, setCount] = useState(0);
+
+
+  useEffect(() => {
+    if (count == 0) {
+      clearCookies();
+      setCount(count + 1);
+    }
+  }, [])
 
   useEffect(() => {
     const handleResize = () => {
@@ -168,7 +177,7 @@ function LoginPage() {
       <center>
         <div style={{ width: screenWidth > 500 ? "50%" : "100%", backgroundColor: "black", height: "100%", borderRadius: "0.5cm", padding: "2%", marginTop: screenWidth > 500 ? "0" : "15%" }}>
           <h2 style={{ color: "white", fontFamily: "inherit", marginBottom: "10%", fontSize: "30px" }}>
-            <span> <FontAwesomeIcon icon={faBrain} style={{ color: "#1677ff" }} /> SpeedIQ</span>
+            <span> <FontAwesomeIcon icon={faBrain}/> SpeedIQ</span>
           </h2>
           {action === null &&
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "30px" }}>

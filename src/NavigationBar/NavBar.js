@@ -7,7 +7,8 @@ import {
   UploadOutlined,
   UserOutlined,
   VideoCameraOutlined,
-  MenuOutlined
+  MenuOutlined,
+  EditOutlined
 } from '@ant-design/icons';
 import { faBrain } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -25,6 +26,7 @@ import { clearCookies, getCookie, setCookie } from '../Cookies/GetCookies';
 import Content_guideLines from '../UserPanel/Content_guideLines';
 import QuizPage from '../UserPanel/QuizPage';
 import { openNotification } from '../DataGridTableStructure.js/PopupMessage';
+import Content_guideLines_Login_page from '../UserPanel/Content_guideLines_login_page';
 
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -56,6 +58,7 @@ const items = [
   BarChartOutlined,
   CloudOutlined,
   AppstoreOutlined,
+  EditOutlined,
   TeamOutlined,
   ShopOutlined,
 ]
@@ -111,7 +114,9 @@ const Timer = (props) => {
 
   return (
     <div style={{ color: "white", fontWeight: "bold" }}>
-      {props.totalMarks === null ? `Time Left: ${formatTime(timeLeft)}` : `Total Marks : ${props.totalMarks}`}
+      <span style={{ color: "white", backgroundColor: "red", padding: "5px",borderRadius:"0.2cm"}}>
+        {props.totalMarks === null ? `Time Left: ${formatTime(timeLeft)}` : `Total Marks : ${props.totalMarks}`}
+      </span>
     </div>
   )
 }
@@ -137,7 +142,7 @@ const App = () => {
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
 
-  const admin_side_nav_options = ["Admin", "Users", "Questions", "User Performance", "Bulk Upload Users", "Bulk Upload Questions", "Clear Quiz", "Logout"].map((icon, index) => ({
+  const admin_side_nav_options = ["Admin", "Users", "Questions", "User Performance", "Bulk Upload Users", "Bulk Upload Questions", "Edit Content and Guidelines", "Clear Quiz", "Logout"].map((icon, index) => ({
     key: String(index + 1),
     icon: React.createElement(items[index]),
     label: icon,
@@ -166,7 +171,7 @@ const App = () => {
 
   useEffect(() => {
     if (!isvalid && !isDemo) {
-      openNotification("Please login!","top","error")
+      openNotification("Please login!", "top", "error")
       // message.error("Please login!");
       navigate("/")
     }
@@ -196,7 +201,7 @@ const App = () => {
   useEffect(() => {
     if (selectedSideNavOption === "Logout") {
       handleLogout();
-    } 
+    }
   }, [selectedSideNavOption])
 
   const handleMenuClick = (key) => {
@@ -211,7 +216,7 @@ const App = () => {
     }
     clearCookies();
     navigate('/')
-    openNotification("Logout Successfully","top","success")
+    openNotification("Logout Successfully", "top", "success")
     // message.success("Logout Successfully")
   }
 
@@ -263,21 +268,21 @@ const App = () => {
 
   return (
     <div>
-        {screenWidth > 1000 && selectedSideNavOption !== 'Content Guide Lines' && selectedSideNavOption !== 'Results' &&
-          <Sider collapsible style={siderStyle} collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-            <div className="demo-logo-vertical" />
-            <Menu theme="dark"
-              mode="inline"
-              defaultSelectedKeys={['1']}
-              selectedKeys={[selectedKey]}
-              items={isAdmin ? admin_side_nav_options : QuestionNavOptions}
-              onClick={isAdmin ? handleMenuClick : handleQuestionNoClick}
-            />
-          </Sider>
-        }
-      
+      {screenWidth > 1000 && selectedSideNavOption !== 'Content Guide Lines' && selectedSideNavOption !== 'Results' &&
+        <Sider collapsible style={siderStyle} collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
+          <div className="demo-logo-vertical" />
+          <Menu theme="dark"
+            mode="inline"
+            defaultSelectedKeys={['1']}
+            selectedKeys={[selectedKey]}
+            items={isAdmin ? admin_side_nav_options : QuestionNavOptions}
+            onClick={isAdmin ? handleMenuClick : handleQuestionNoClick}
+          />
+        </Sider>
+      }
 
-      <div style={{  marginLeft: screenWidth <= 1000 ? "0" : selectedSideNavOption === 'Content Guide Lines' || selectedSideNavOption === 'Results' ? "0" : collapsed ? "2.5cm" : "5.8cm" }}>
+
+      <div style={{ marginLeft: screenWidth <= 1000 ? "0" : selectedSideNavOption === 'Content Guide Lines' || selectedSideNavOption === 'Results' ? "0" : collapsed ? "2.5cm" : "5.8cm" }}>
         <Header style={{
           display: 'flex',
           alignItems: 'center',
@@ -295,8 +300,8 @@ const App = () => {
             </h2>
           </div>
 
-          {!isAdmin && userGuideLinesDone &&
-            <div style={{flex: "1", display: "flex", justifyContent: "center",marginLeft:"-70%"}}>
+          {!isAdmin && userGuideLinesDone && screenWidth > 400 &&
+            <div style={{ flex: "1", display: "flex", justifyContent: "center", marginLeft: "-70%" }}>
               <Timer
                 totalMarks={marks}
                 clickedOnSubmit={clickedOnSubmit}
@@ -343,6 +348,17 @@ const App = () => {
 
 
         <Layout style={{ margin: "0.5%", marginTop: "0.8%", height: "83vh", borderRadius: "0.2cm", overflow: "scroll" }}>
+
+          {!isAdmin && userGuideLinesDone && screenWidth < 400 &&
+            <div style={{ textAlign: "center" ,marginTop:"0.3cm"}}>
+                <Timer
+                  totalMarks={marks}
+                  clickedOnSubmit={clickedOnSubmit}
+                  setAutoSubmit={(value) => setAutoSubmit(value)}
+                />
+            </div>
+          }
+
           {(() => {
             switch (selectedSideNavOption) {
               case "Admin":
@@ -359,6 +375,8 @@ const App = () => {
                 return <BulkUploadOfQuestions flag="login" />
               case "Content Guide Lines":
                 return <Content_guideLines screenWidth={screenWidth} timerDone={handleUserguideLinesDone} />
+              case "Edit Content and Guidelines":
+                return <Content_guideLines_Login_page selectedKey={selectedSideNavOption} />
               case "Clear Quiz":
                 return <ClearQuiz />
               case "Quiz":
