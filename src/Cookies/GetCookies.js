@@ -1,5 +1,5 @@
 function encodeBase64(value) {
-    return btoa(value); 
+    return btoa(value);
 }
 
 function decodeBase64(value) {
@@ -12,17 +12,20 @@ export function getCookie(name) {
     for (let cookie of cookieArr) {
         cookie = cookie.trim();
         if (cookie.startsWith(name + '=')) {
-            const encodedValue= cookie.substring(name.length + 1);
+            const encodedValue = cookie.substring(name.length + 1);
             return decodeBase64(encodedValue)
         }
     }
     return null;
 }
 
-export function clearCookies() {
+export function clearCookies(tokenId) {
     document.cookie.split(";").forEach((cookie) => {
+        cookie = cookie.trim();
         const cookieName = cookie.split("=")[0].trim();
-        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        if (cookieName.startsWith(tokenId + "-")) {
+            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        }
     });
 };
 

@@ -5,7 +5,7 @@ import { deleteApi, getApi, postApi, putApi } from '../API/AllRequestTypeAPIsLog
 import enums from '../API/ApiList';
 import DataGridTable from "../DataGridTableStructure.js/DataGridTable";
 import { now } from '../DateTime'
-import {openNotification} from "../DataGridTableStructure.js/PopupMessage"
+import { openNotification } from "../DataGridTableStructure.js/PopupMessage"
 
 const QuestionsList = () => {
 
@@ -15,9 +15,12 @@ const QuestionsList = () => {
     const [open, setOpen] = useState(false);
     const [form] = Form.useForm();
     const [requestDone, setRequestDone] = useState(0);
+    const [loading, setLoading] = useState(false)
+    const [loadingLayOut, setLoadingLayOut] = useState(false);
 
 
     useEffect(() => {
+        setLoading(true)
         const temp = getApi(enums.BASE_URL + enums.ENDPOINTS.Questions.GET_ALL_QUESTIONS)
         temp.then(data => {
             var questionsTemp = []
@@ -26,8 +29,10 @@ const QuestionsList = () => {
                 x.actionId = x.id;
                 questionsTemp.push(x);
             })
+            setLoading(false)
             setQuestionsList(questionsTemp);
         }).catch(exception => {
+            setLoading(false)
             console.error("Error in getting the Questions List ", exception);
         })
     }, [requestDone])
@@ -37,20 +42,23 @@ const QuestionsList = () => {
             title: "Are you sure?",
             content: "Do you want to proceed with this action?",
             onOk: () => {
+                setLoadingLayOut(true)
                 const deleteAction = deleteApi(enums.BASE_URL + enums.ENDPOINTS.Questions.DELETE_QUESTION + id);
                 deleteAction.then(data => {
                     // console.log("data for deleted user ", data);
                     if (data) {
-                        openNotification("User Deleted Successfully","top","success")
+                        openNotification("User Deleted Successfully", "top", "success")
                         // message.success("User Deleted Successfully")
                         setRequestDone(requestDone + 1)
+                        setLoadingLayOut(false)
                     }
                 }).catch(exception => {
+                    setLoadingLayOut(false)
                     console.error("exception while deleting the user Details ", exception)
                 })
             },
             onCancel: () => {
-                openNotification("Action canceled","top","info")
+                openNotification("Action canceled", "top", "info")
                 // message.info("Action canceled")
                 console.log("Action canceled"); // Handle cancel action here
             },
@@ -174,7 +182,7 @@ const QuestionsList = () => {
             optionC: form.getFieldValue(['optionC']),
             optionD: form.getFieldValue(['optionD']),
             correctOption: form.getFieldValue(['correctoption']),
-            marks: form.getFieldValue(['marks']),
+            // marks: form.getFieldValue(['marks']),
             created_date: Action === 'add' ? now() : form.getFieldValue(['created_date']),
             updated_date: now(),
         }
@@ -182,25 +190,31 @@ const QuestionsList = () => {
         // console.log("requestBody for creating the user ", requestBody);
 
         if (Action === 'add') {
+            setLoadingLayOut(true)
             const postQuestionDetails = postApi(enums.BASE_URL + enums.ENDPOINTS.Questions.ADD_QUESTION, requestBody)
             postQuestionDetails.then(data => {
                 // console.log("data ", data)
-                openNotification("User added successfully","top","success")
+                openNotification("User added successfully", "top", "success")
                 // message.success("User added successfully")
                 setRequestDone(requestDone + 1)
                 setOpen(false)
+                setLoadingLayOut(false)
             }).catch(exception => {
+                setLoadingLayOut(false)
                 console.error("Error in posting the user details", exception)
             })
         } else {
+            setLoadingLayOut(true)
             const postQuestionDetails = putApi(enums.BASE_URL + enums.ENDPOINTS.Questions.UPDATE_QUESTION + IdSelected, requestBody)
             postQuestionDetails.then(data => {
                 // console.log("data ", data)
-                openNotification("User edited successfully","top","success")
+                openNotification("User edited successfully", "top", "success")
                 // message.success("User edited successfully")
                 setRequestDone(requestDone + 1)
                 setOpen(false)
+                setLoadingLayOut(false)
             }).catch(exception => {
+                setLoadingLayOut(false)
                 console.error("Error in posting the user details", exception)
             })
         }
@@ -214,7 +228,7 @@ const QuestionsList = () => {
                 postDetails(); // Pass postDetails as a callback
             },
             onCancel: () => {
-                openNotification("Action canceled","top","info")
+                openNotification("Action canceled", "top", "info")
                 // message.info("Action canceled")
                 console.log("Action canceled"); // Handle cancel action here
             },
@@ -222,7 +236,7 @@ const QuestionsList = () => {
     }
 
     const handleFinishFailed = () => {
-        openNotification("please ensure the requied fields are filled!","top","info")
+        openNotification("please ensure the requied fields are filled!", "top", "info")
         // message.info("please ensure the requied fields are filled!")
     }
 
@@ -232,7 +246,7 @@ const QuestionsList = () => {
 
     return (
         <div>
-            <DataGridTable columns={QuestionsColums} rows={questionsList} height={495} initialSortingField={null} initialSortingType={null} />
+            <DataGridTable columns={QuestionsColums} rows={questionsList} height={495} initialSortingField={null} initialSortingType={null} loading={loading} />
             <Modal
                 open={open}
                 title={<a style={{ color: "#1677ff", fontSize: "large" }}>{Action === "add" ? "Add Question" : "Edit Question"}</a>}
@@ -307,13 +321,13 @@ const QuestionsList = () => {
                         />
                     </Form.Item>
 
-                    <Form.Item
+                    {/* <Form.Item
                         name="marks"
                         label={<a style={{ fontSize: "small", fontFamily: "sans-serif", color: "black" }}>Marks</a>}
                         rules={[{ required: true, message: "Please enter the marks!" }]}
                     >
                         <Input type="number" />
-                    </Form.Item>
+                    </Form.Item> */}
 
                     <div style={{ display: "flex", marginTop: "0.5cm" }}>
                         <Button style={{ marginLeft: "30%" }} onClick={handleCancel}>
@@ -325,6 +339,11 @@ const QuestionsList = () => {
                     </div>
                 </Form>
             </Modal>
+            {loadingLayOut && (
+                <div className="loader-overlay">
+                    <div className="loader"></div>
+                </div>
+            )}
         </div>
     )
 }

@@ -13,7 +13,7 @@ import {
 import { faBrain } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Layout, Menu, message, theme, Drawer } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminDetailsPage from '../AdminPanel/AdminList';
 import BulkUploadOfQuestions from '../AdminPanel/BulkUploadQuestions';
@@ -71,14 +71,15 @@ const items = [
 
 
 const Timer = (props) => {
-  let time = getCookie('timeLeft')
+  let tokenId =sessionStorage.getItem("tokenId")
+  let time = getCookie(`${tokenId}-timeLeft`)
   const [timeLeft, setTimeLeft] = useState(time ? parseInt(time) : (30 * 60));
   const { setAutoSubmit } = props;
 
   useEffect(() => {
 
     if (!getCookie('startTime')) {
-      setCookie("startTime", new Date())
+      setCookie(`${tokenId}-startTime`, new Date())
       // document.cookie = `startTime=${new Date()}; path=/;`;
     }
 
@@ -92,7 +93,7 @@ const Timer = (props) => {
       const timer = setInterval(() => {
         setTimeLeft((prevTime) => {
           const updatedTime = prevTime - 1; // Calculate the new time
-          setCookie("timeLeft", updatedTime)
+          setCookie(`${tokenId}-timeLeft`, updatedTime)
           // document.cookie = `timeLeft=${updatedTime}; path=/;`; // Update cookie with the correct value
           return updatedTime;
         });
@@ -114,7 +115,7 @@ const Timer = (props) => {
 
   return (
     <div style={{ color: "white", fontWeight: "bold" }}>
-      <span style={{ color: "white", backgroundColor: "red", padding: "5px",borderRadius:"0.2cm"}}>
+      <span style={{ color: "white", backgroundColor: "red", padding: "5px", borderRadius: "0.2cm" }}>
         {props.totalMarks === null ? `Time Left: ${formatTime(timeLeft)}` : `Total Marks : ${props.totalMarks}`}
       </span>
     </div>
@@ -128,10 +129,12 @@ const App = () => {
   } = theme.useToken();
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
-  const isAdmin = getCookie('isadmin') === "true";
-  const isDemo = getCookie('isdemo') === "true";
-  const isvalid = getCookie('isvalid') === "true";
-  const [userGuideLinesDone, setUserGuiderLinesDone] = useState(getCookie('guideLinesDone') ? getCookie('guideLinesDone') === 'true' : false);
+  
+  let tokenId = sessionStorage.getItem("tokenId");
+  let isAdmin = getCookie(`${tokenId}-isadmin`) === "true";
+  let isDemo = getCookie(`${tokenId}-isdemo`) === "true";
+  let isvalid = getCookie(`${tokenId}-isvalid`) === "true";
+  const [userGuideLinesDone, setUserGuiderLinesDone] = useState(getCookie(`${tokenId}-guideLinesDone`) ? getCookie(`${tokenId}-guideLinesDone`) === 'true' : false);
   const [QuestionNavOptions, setQuestionNavOptions] = useState([]);
   const [selectedSideNavOption, setSelectedSideNavOption] = useState();
   const [questionSelected, setQuestionSelected] = useState(1);
@@ -148,6 +151,7 @@ const App = () => {
     label: icon,
   }));
 
+  
 
   const showDrawer = () => {
     setIsDrawerVisible(true);
@@ -170,18 +174,22 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if (!isvalid && !isDemo) {
-      openNotification("Please login!", "top", "error")
-      // message.error("Please login!");
+    if(tokenId===null || tokenId===undefined){
+      openNotification("Credentials Missing Please login again!", "top", "error")
       navigate("/")
     }
-  })
+    // console.log("isvalid ",isvalid,isDemo)
+    if (!isvalid && !isDemo) {
+      openNotification("Credentials Missing Please login again!", "top", "error")
+      navigate("/")
+    }
+  },[])
 
   useEffect(() => {
     if (isAdmin) {
       setSelectedSideNavOption("Admin");
     } else {
-      if (getCookie('guideLinesDone') !== 'true') {
+      if (getCookie(`${tokenId}-guideLinesDone`) !== 'true') {
         setSelectedSideNavOption("Content Guide Lines");
       } else {
         setSelectedSideNavOption("Quiz");
@@ -194,7 +202,7 @@ const App = () => {
     // console.log("userGuideLinesDone = ", userGuideLinesDone, "questions count ", parseInt(getCookie('questionsLength')))
     if (userGuideLinesDone) {
       setSelectedSideNavOption("Quiz");
-      handleUpdateQuestionsCount(parseInt(getCookie('questionsLength')))
+      handleUpdateQuestionsCount(parseInt(getCookie(`${tokenId}-questionsLength`)))
     }
   }, [userGuideLinesDone])
 
@@ -214,10 +222,9 @@ const App = () => {
     if (!isAdmin) {
       inVallidateUser();
     }
-    clearCookies();
+    clearCookies(tokenId);
     navigate('/')
     openNotification("Logout Successfully", "top", "success")
-    // message.success("Logout Successfully")
   }
 
   const handleUserguideLinesDone = (flag) => {
@@ -262,8 +269,13 @@ const App = () => {
   }
 
   const handleHomePage = () => {
-    clearCookies()
+    clearCookies(tokenId)
     navigate('/')
+  }
+
+  const handleQuestionChangeFromChild=(questionSelectedFromChild)=>{
+    setSelectedkey(String(questionSelectedFromChild+1))
+    setQuestionSelected(questionSelectedFromChild+1)
   }
 
   return (
@@ -300,7 +312,7 @@ const App = () => {
             </h2>
           </div>
 
-          {!isAdmin && userGuideLinesDone && screenWidth > 400 &&
+          {!isAdmin && userGuideLinesDone && QuestionNavOptions?.length > 0 && screenWidth > 400 &&
             <div style={{ flex: "1", display: "flex", justifyContent: "center", marginLeft: "-70%" }}>
               <Timer
                 totalMarks={marks}
@@ -349,13 +361,13 @@ const App = () => {
 
         <Layout style={{ margin: "0.5%", marginTop: "0.8%", height: "83vh", borderRadius: "0.2cm", overflow: "scroll" }}>
 
-          {!isAdmin && userGuideLinesDone && screenWidth < 400 &&
-            <div style={{ textAlign: "center" ,marginTop:"0.3cm"}}>
-                <Timer
-                  totalMarks={marks}
-                  clickedOnSubmit={clickedOnSubmit}
-                  setAutoSubmit={(value) => setAutoSubmit(value)}
-                />
+          {!isAdmin && userGuideLinesDone && QuestionNavOptions?.length > 0 && screenWidth < 400 &&
+            <div style={{ textAlign: "center", marginTop: "0.3cm" }}>
+              <Timer
+                totalMarks={marks}
+                clickedOnSubmit={clickedOnSubmit}
+                setAutoSubmit={(value) => setAutoSubmit(value)}
+              />
             </div>
           }
 
@@ -389,6 +401,7 @@ const App = () => {
                   clickedOnSubmit={(value) => setClickedOnSubmit(value)}
                   autoSubmit={autoSubmit}
                   screenWidth={screenWidth}
+                  questionSelectedFromChild={handleQuestionChangeFromChild}
                 />
               default:
                 return null;

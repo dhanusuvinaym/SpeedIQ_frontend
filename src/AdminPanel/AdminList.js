@@ -15,8 +15,11 @@ const AdminList = () => {
     const [selectId, setSelectedId] = useState(0);
     const [action, setAction] = useState(null)
     const [requestDone, setRequestDone] = useState(0);
+    const [loading, setLoading] = useState(false)
+    const [loadingLayOut, setLoadingLayout] = useState(false)
 
     useEffect(() => {
+        setLoading(true)
         const adminDetailsFetch = getApi(enums.BASE_URL + enums.ENDPOINTS.ADMIN.GETALL);
         adminDetailsFetch.then(data => {
             if (data) {
@@ -29,14 +32,17 @@ const AdminList = () => {
                     tempdata.sno = index + 1
                     temp.push(tempdata);
                 })
+                setLoading(false)
 
                 setAdminDetails(temp);
             } else {
-                openNotification("Exception while fetching the details","top","error")
+                setLoading(false)
+                openNotification("Exception while fetching the details", "top", "error")
                 // message.error("Exception while fetching the details")
             }
         }).catch(Exception => {
-            openNotification("Exception while fetching the details "+ Exception,"top","error")
+            setLoading(false)
+            openNotification("Exception while fetching the details " + Exception, "top", "error")
             // message.error("Exception while fetching the details ", Exception)
             console.error("Exception while fetching the admin details ", Exception);
         })
@@ -64,15 +70,18 @@ const AdminList = () => {
             title: "Are you sure?",
             content: "Do you want to proceed with this action?",
             onOk: () => {
+                setLoadingLayout(true)
                 const deleteAction = deleteApi(enums.BASE_URL + enums.ENDPOINTS.ADMIN.DELETE + id);
                 deleteAction.then(data => {
                     // console.log("data for deleted user ", data);
                     if (data) {
-                        openNotification("Admin Deleted Successfully","top","success")
+                        openNotification("Admin Deleted Successfully", "top", "success")
                         // message.success("Admin Deleted Successfully")
+                        setLoadingLayout(false)
                         setRequestDone(requestDone + 1)
                     }
                 }).catch(exception => {
+                    setLoadingLayout(false)
                     console.error("exception while deleting the user Details ", exception)
                 })
 
@@ -80,7 +89,7 @@ const AdminList = () => {
             onCancel: () => {
                 // console.log("Action canceled"); // Handle cancel action here
                 // message.info("Action Cancelled")
-                openNotification("Action Cancelled","top","info")
+                openNotification("Action Cancelled", "top", "info")
             },
         });
     }
@@ -185,25 +194,28 @@ const AdminList = () => {
                 title: "Are you sure?",
                 content: "Do you want to proceed with this action?",
                 onOk: () => {
+                    setLoadingLayout(true)
                     const createAdmin = postApi(enums.BASE_URL + enums.ENDPOINTS.ADMIN.CREATE, requestJson)
                     createAdmin.then(data => {
                         if (data) {
                             setRequestDone(requestDone + 1);
                             setIsOpen(false);
-                            openNotification("Admin created successfully","top","success")
+                            setLoadingLayout(false)
+                            openNotification("Admin created successfully", "top", "success")
                             // message.success("Admin created successfully");
                         } else {
-                            openNotification("Exception while fetching the details","top","error")
+                            setLoadingLayout(false)
+                            openNotification("Exception while fetching the details", "top", "error")
                             // message.error("Exception while fetching the details")
                         }
                     }).catch(exception => {
-                        openNotification(exception?.response?.data?.error,"top","error")
-                        // message.error(exception?.response?.data?.error);
+                        setLoadingLayout(false)
+                        openNotification(exception?.response?.data?.error, "top", "error")
                         console.error("exception while getting the error ", exception);
                     })
                 },
                 onCancel: () => {
-                    openNotification("Admin is not created","top","info")
+                    openNotification("Admin is not created", "top", "info")
                     // message.info("Admin is not created")
                 }
             })
@@ -212,25 +224,29 @@ const AdminList = () => {
                 title: "Are you sure?",
                 content: "Do you want to proceed with this action?",
                 onOk: () => {
+                    setLoadingLayout(true)
                     const createAdmin = patchApi(enums.BASE_URL + enums.ENDPOINTS.ADMIN.UPDATE + selectId, requestJson)
                     createAdmin.then(data => {
                         if (data) {
+                            setLoadingLayout(false)
                             setRequestDone(requestDone + 1);
                             setIsOpen(false);
-                            openNotification("Admin edited successfully","top","success")
+                            openNotification("Admin edited successfully", "top", "success")
                             // message.success("Admin edited successfully");
                         } else {
-                            openNotification("Exception while fetching the details","top","error")
+                            setLoadingLayout(false)
+                            openNotification("Exception while fetching the details", "top", "error")
                             // message.error("Exception while fetching the details")
                         }
                     }).catch(exception => {
-                        openNotification(exception?.response?.data?.error,"top","error")
+                        setLoadingLayout(false)
+                        openNotification(exception?.response?.data?.error, "top", "error")
                         // message.error(exception?.response?.data?.error);
                         console.error("exception while getting the error ", exception);
                     })
                 },
                 onCancel: () => {
-                    openNotification("Admin is not created","top","info")
+                    openNotification("Admin is not created", "top", "info")
                     // message.info("Admin is not created")
                 }
             })
@@ -244,7 +260,7 @@ const AdminList = () => {
 
     return (
         <div>
-            <DataGridTable columns={adminDetailsColumns} rows={adminDetails} height={495} initialSortingField={null} initialSortingType={null} />
+            <DataGridTable columns={adminDetailsColumns} rows={adminDetails} height={495} initialSortingField={null} initialSortingType={null} loading={loading} />
             <Modal
                 open={open}
                 title={<a style={{ color: "#1677ff", fontSize: "large" }}>Add User</a>}
@@ -282,6 +298,11 @@ const AdminList = () => {
                     </div>
                 </Form>
             </Modal>
+            {loadingLayOut && (
+                <div className="loader-overlay">
+                    <div className="loader"></div>
+                </div>
+            )}
         </div>
     )
 

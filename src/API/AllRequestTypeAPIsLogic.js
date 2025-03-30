@@ -1,18 +1,13 @@
 import axios from "axios";
-import { clearCookies, getCookie } from "../Cookies/GetCookies";
+import { getCookie } from "../Cookies/GetCookies";
 import { now } from "../DateTime";
 import enums from "./ApiList";
 
-
-
-// console.log("jwtToken ====== ", jwtToken);
-
-// console.log("isdemo === ", isdemo, getCookie('isdemo'))
-
 export const getApi = async (apiUrl) => {
 
-  const jwtToken = getCookie('jwtToken')
-  const isdemo = getCookie('isdemo') === 'true'
+  const tokenId = sessionStorage.getItem("tokenId")
+  const jwtToken = getCookie(`${tokenId}-jwtToken`)
+  const isdemo = getCookie(`${tokenId}-isdemo`) === 'true'
 
   const response = await axios.get(apiUrl, {
     headers: {
@@ -27,8 +22,9 @@ export const getApi = async (apiUrl) => {
 // POST Request
 export const postApi = async (apiUrl, apiRequestBody) => {
 
-  const jwtToken = getCookie('jwtToken')
-  const isdemo = getCookie('isdemo') === 'true'
+  const tokenId = sessionStorage.getItem("tokenId")
+  const jwtToken = getCookie(`${tokenId}-jwtToken`)
+  const isdemo = getCookie(`${tokenId}-isdemo`) === 'true'
 
   // try {
   const response = await axios.post(apiUrl, apiRequestBody, {
@@ -47,8 +43,9 @@ export const postApi = async (apiUrl, apiRequestBody) => {
 // PUT Request
 export const putApi = async (apiUrl, apiRequestBody) => {
 
-  const jwtToken = getCookie('jwtToken')
-  const isdemo = getCookie('isdemo') === 'true'
+  const tokenId = sessionStorage.getItem("tokenId")
+  const jwtToken = getCookie(`${tokenId}-jwtToken`)
+  const isdemo = getCookie(`${tokenId}-isdemo`) === 'true'
 
   // try {
   const response = await axios.put(apiUrl, apiRequestBody, {
@@ -67,8 +64,9 @@ export const putApi = async (apiUrl, apiRequestBody) => {
 // PATCH Request
 export const patchApi = async (apiUrl, apiRequestBody) => {
 
-  const jwtToken = getCookie('jwtToken')
-  const isdemo = getCookie('isdemo') === 'true'
+  const tokenId = sessionStorage.getItem("tokenId")
+  const jwtToken = getCookie(`${tokenId}-jwtToken`)
+  const isdemo = getCookie(`${tokenId}-isdemo`) === 'true'
 
   const response = await axios.patch(apiUrl, apiRequestBody, {
     headers: {
@@ -82,8 +80,9 @@ export const patchApi = async (apiUrl, apiRequestBody) => {
 
 // DELETE Request
 export const deleteApi = async (apiUrl) => {
-  const jwtToken = getCookie('jwtToken')
-  const isdemo = getCookie('isdemo') === 'true'
+  const tokenId = sessionStorage.getItem("tokenId")
+  const jwtToken = getCookie(`${tokenId}-jwtToken`)
+  const isdemo = getCookie(`${tokenId}-isdemo`) === 'true'
 
   // console.log("jwtToken in deleteApi ",jwtToken)
   // console.log("isdemo in deleteApi ",isdemo)
@@ -100,13 +99,15 @@ export const deleteApi = async (apiUrl) => {
 
 
 export const inVallidateUser = async () => {
-  const jwtToken = getCookie('jwtToken')
-  const isdemo = getCookie('isdemo') === 'true'
+  const tokenId = sessionStorage.getItem("tokenId")
+  const jwtToken = getCookie(`${tokenId}-jwtToken`)
+  const isdemo = getCookie(`${tokenId}-isdemo`) === 'true'
 
   const requestJson = {
-    id: parseInt(getCookie('id')),
-    mobileNumber:getCookie('username'),
-    tokenId: getCookie('tokenId'),
+    id: parseInt(getCookie(`${tokenId}-id`)),
+    username:getCookie(`${tokenId}-username`),
+    mobileNumber:getCookie(`${tokenId}-mobilenumber`),
+    tokenId: tokenId,
     isvalid: false,
     activity_date: now(),
   }

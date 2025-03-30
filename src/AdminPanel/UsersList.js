@@ -5,7 +5,7 @@ import { deleteApi, getApi, postApi, putApi } from '../API/AllRequestTypeAPIsLog
 import enums from '../API/ApiList';
 import DataGridTable from "../DataGridTableStructure.js/DataGridTable";
 import { now } from '../DateTime'
-import {openNotification} from '../DataGridTableStructure.js/PopupMessage'
+import { openNotification } from '../DataGridTableStructure.js/PopupMessage'
 
 const UsersList = () => {
 
@@ -14,8 +14,11 @@ const UsersList = () => {
     const [open, setOpen] = useState(false);
     const [form] = Form.useForm();
     const [requestDone, setRequestDone] = useState(0);
+    const [loading, setLoading] = useState(false)
+    const [loadingLayOut, setLoadingLayOut] = useState(false)
 
     useEffect(() => {
+        setLoading(true)
         const temp = getApi(enums.BASE_URL + enums.ENDPOINTS.LOGIN.GET_ALL_LOGIN_DETAILS);
         temp.then(data => {
             var loginTemp = []
@@ -25,8 +28,10 @@ const UsersList = () => {
                 loginTemp.push(x);
             })
             // console.log("loginTemp ",loginTemp)
+            setLoading(false)
             setLoginDetails(loginTemp)
         }).catch(error => {
+            setLoading(false)
             console.error("Error fetching data:", error);
         });
     }, [requestDone])
@@ -36,21 +41,25 @@ const UsersList = () => {
             title: "Are you sure?",
             content: "Do you want to proceed with this action?",
             onOk: () => {
+                setLoadingLayOut(true)
                 const deleteAction = deleteApi(enums.BASE_URL + enums.ENDPOINTS.LOGIN.DELETE + id);
                 deleteAction.then(data => {
                     // console.log("data for deleted user ", data);
                     if (data) {
-                        openNotification("User Deleted Successfully","top","success")
+                        openNotification("User Deleted Successfully", "top", "success")
                         // message.success("User Deleted Successfully")
+                        setLoadingLayOut(false)
                         setRequestDone(requestDone + 1)
                     }
                 }).catch(exception => {
+                    setLoadingLayOut(false)
+                    openNotification("Exception while Delete the users", "top", "error")
                     console.error("exception while deleting the user Details ", exception)
                 })
 
             },
             onCancel: () => {
-                openNotification("Action canceled","top","info")
+                openNotification("Action canceled", "top", "info")
                 // message.info("Action canceled")
                 // console.log("Action canceled"); // Handle cancel action here
             },
@@ -141,27 +150,30 @@ const UsersList = () => {
             id: null,
             tokenId: form.getFieldValue(['tokenId']),
             activity_date: null,
-            username:null,
+            username: null,
             isvalid: true
         }
 
         // console.log("requestBody for creating the user ", requestBody);
 
         if (requestBody?.tokenId) {
+            setLoadingLayOut(true)
             const postUserDetails = postApi(enums.BASE_URL + enums.ENDPOINTS.LOGIN.REGISTER, requestBody)
             postUserDetails.then(data => {
                 // console.log("data for posting data ", data)
-                openNotification("User added Successfully","top","success")
+                openNotification("User added Successfully", "top", "success")
                 // message.success("User added successfully")
                 setRequestDone(requestDone + 1)
                 setOpen(false)
+                setLoadingLayOut(false)
             }).catch(exception => {
                 console.error("Error in posting the user details", exception?.response.data)
-                openNotification(exception?.response.data,"top","error")
+                openNotification(exception?.response.data, "top", "error")
+                setLoadingLayOut(false)
                 // message.error(exception?.response.data)
             })
         } else {
-            openNotification("Please enter the token Id and username","top","info")
+            openNotification("Please enter the token Id and username", "top", "info")
             // message.info("Please enter the token Id and username")
         }
     }
@@ -174,7 +186,7 @@ const UsersList = () => {
                 postDetails(); // Pass postDetails as a callback
             },
             onCancel: () => {
-                openNotification("Action canceled","top","info")
+                openNotification("Action canceled", "top", "info")
                 // message.info("Action canceled")
                 // console.log("Action canceled"); // Handle cancel action here
             },
@@ -186,13 +198,13 @@ const UsersList = () => {
     }
 
     const handleFinishFailed = () => {
-        openNotification("Please ensure the required fields are filled!","top","info")
+        openNotification("Please ensure the required fields are filled!", "top", "info")
         // message.info("Please ensure the required fields are filled!")
     }
 
     return (
         <div>
-            <DataGridTable columns={UserDetailsColums} rows={loginDetails} height={495} initialSortingField={null} initialSortingType={null} />
+            <DataGridTable columns={UserDetailsColums} rows={loginDetails} height={495} initialSortingField={null} initialSortingType={null} loading={loading} />
             <Modal
                 open={open}
                 title={<a style={{ color: "#1677ff", fontSize: "large" }}>Add User</a>}
@@ -230,6 +242,11 @@ const UsersList = () => {
                     </div>
                 </Form>
             </Modal>
+            {loadingLayOut && (
+                <div className="loader-overlay">
+                    <div className="loader"></div>
+                </div>
+            )}
         </div>
     )
 

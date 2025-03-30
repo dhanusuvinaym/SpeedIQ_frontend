@@ -1,35 +1,41 @@
 import { CloseCircleOutlined } from '@ant-design/icons';
-import { Button, message, Modal } from 'antd';
-import React, { useEffect, useState, useRef } from "react";
+import { Button, Modal } from 'antd';
+import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { getApi, inVallidateUser, postApi } from "../API/AllRequestTypeAPIsLogic";
 import enums from "../API/ApiList";
 import { clearCookies, getCookie, setCookie } from "../Cookies/GetCookies";
+import { openNotification } from '../DataGridTableStructure.js/PopupMessage';
 import { formatDuration, now } from '../DateTime';
-import { openNotification } from '../DataGridTableStructure.js/PopupMessage'
+import {CheckCircleFilled} from '@ant-design/icons'
 
 const QuizPage = (props) => {
 
-    const [questionData, setQuestionsData] = useState(getCookie('questions') ? JSON.parse(getCookie('questions')) : null);
+    let tokenId = sessionStorage.getItem('tokenId')
+    const [questionData, setQuestionsData] = useState(getCookie(`${tokenId}-questions`) ? JSON.parse(getCookie(`${tokenId}-questions`)) : null);
     const { updateQuestionsCount } = props;
     const { handleprevNextAction } = props;
     const { finalOutput } = props;
     const { clickedOnSubmit } = props;
+    const {questionSelectedFromChild} = props;
     const [questionSelected, setQuestionSelected] = useState((props.selectedQuestion) - 1);
-    let answersTemp = getCookie('answers');
+    let answersTemp = getCookie(`${tokenId}-answers`);
     const [answers, setAnswers] = useState(answersTemp ? JSON.parse(answersTemp) : {});
-    const user_id = parseInt(getCookie("id"));
-    const [quizDone, setQuizDone] = useState(getCookie('quizDone') === 'true' ? true : false);
-    const [showResults, setShowResults] = useState(getCookie('showResults') === 'true' ? true : false);
-    const [correctOptions, setCorrectOptions] = useState(getCookie('correctOptions') ? JSON.parse(getCookie('correctOptions')) : {})
-    const [totalMarks, setTotalMarks] = useState(getCookie('totalMarks') ? parseInt(getCookie('totalMarks')) : null);
+    const user_id = parseInt(getCookie(`${tokenId}-id`));
+    const [quizDone, setQuizDone] = useState(getCookie(`${tokenId}-quizDone`) === 'true' ? true : false);
+    const [showResults, setShowResults] = useState(getCookie(`${tokenId}-showResults`) === 'true' ? true : false);
+    const [correctOptions, setCorrectOptions] = useState(getCookie(`${tokenId}-correctOptions`) ? JSON.parse(getCookie(`${tokenId}-correctOptions`)) : {})
+    const [totalMarks, setTotalMarks] = useState(getCookie(`${tokenId}-totalMarks`) ? parseInt(getCookie(`${tokenId}-totalMarks`)) : null);
     const navigate = useNavigate();
-    const [startTime] = useState(getCookie('startTime') ? new Date(getCookie('startTime')) : new Date());
+    const [startTime] = useState(getCookie(`${tokenId}-startTime`) ? new Date(getCookie(`${tokenId}-startTime`)) : new Date());
     const autoSubmit = props.autoSubmit
-    const isDemo = getCookie("isdemo") === 'true'
-    const hasSubmitted = useRef(false);
+    const isDemo = getCookie(`${tokenId}-isdemo`) === 'true'
     const screenWidth = props.screenWidth
+    const [testSubmitted, setTestSubmitted] = useState(false);
+    const [loadingLayOut, setLoadingLayout] = useState(false);
+    const [modalOpened, setModalOpened] = useState(false);
 
+    console.log("questionSelected",questionSelected)
 
     useEffect(() => {
         if (showResults) {
@@ -38,16 +44,21 @@ const QuizPage = (props) => {
     }, [showResults]);
 
     useEffect(() => {
+        const alreadySubmitted = sessionStorage.getItem('handleSubmitCalled') === 'true';
+        // console.log("alreadySubmitted == ", alreadySubmitted)
         if (autoSubmit) {
-            handleSubmit();
+            if (!alreadySubmitted) {
+                Modal.destroyAll();
+                handleSubmit();
+            }
         }
     }, [autoSubmit])
 
     useEffect(() => {
         if (Object.keys(answers).length !== 0) {
-            if (Object.keys(answers).length === 10 && !hasSubmitted.current) {
+            const alreadySubmitted = sessionStorage.getItem('handleSubmitCalled') === 'true';
+            if (Object.keys(answers).length === 10 && !alreadySubmitted && !modalOpened) {
                 handleSubmit();
-                hasSubmitted.current = true;
             }
             setTimeout(() => {
                 handleprevNextAction('N')
@@ -64,17 +75,20 @@ const QuizPage = (props) => {
 
     useEffect(() => {
         if (!questionData) {
+            setLoadingLayout(true);
             const questionsTemp = getApi(enums.BASE_URL + enums.ENDPOINTS.Questions.GET_RANDOM_QUESTIONS, null);
             questionsTemp.then(data => {
-                if (data) {
-                    updateQuestionsCount(data.length);
-                    setCookie("questions", JSON.stringify(data))
-                    setCookie("questionsLength", data.length)
+                if (data?.length > 0) {
+                    updateQuestionsCount(data?.length);
+                    setCookie(`${tokenId}-questions`, JSON.stringify(data))
+                    setCookie(`${tokenId}-questionsLength`, data?.length)
                     // document.cookie = `questions=${JSON.stringify(data)}; path=/;`;
                     // document.cookie = `questionsLength=${data.length}; path=/;`;
                     setQuestionsData(data);
+                    setLoadingLayout(false);
                 }
             }).catch(exception => {
+                setLoadingLayout(false);
                 console.error("Exception in getting the random questions ", exception);
             })
         }
@@ -87,7 +101,7 @@ const QuizPage = (props) => {
             const updatedAnswers = { ...prevAnswers, [questionId]: selectedOption };
 
             // Update the cookie
-            setCookie("answers", JSON.stringify(updatedAnswers))
+            setCookie(`${tokenId}-answers`, JSON.stringify(updatedAnswers))
             // document.cookie = `answers=${JSON.stringify(updatedAnswers)}; path=/;`;
             // Return the updated state
             return updatedAnswers;
@@ -107,8 +121,7 @@ const QuizPage = (props) => {
             }
             correctOptionsTemp[x.id] = x.correctOption;
         })
-        setCookie("correctOptions", JSON.stringify(correctOptionsTemp))
-        // document.cookie = `correctOptions=${JSON.stringify(correctOptionsTemp)}; path=/;`;
+        setCookie(`${tokenId}-correctOptions`, JSON.stringify(correctOptionsTemp))
         setTotalMarks(marks);
         setCorrectOptions(correctOptionsTemp);
         return marks;
@@ -117,71 +130,211 @@ const QuizPage = (props) => {
     // console.log("questionData = ", questionData)
 
     const handleSubmit = () => {
-        if (!autoSubmit) {
-            Modal.confirm({
-                title: null,
-                content:
-                    <div>
-                        <h3>Are you sure you want to submit the test ?</h3>
-                        <p>Answered  : <a style={{ color: "green", fontWeight: "bold" }}> {Object.keys(answers)?.length}</a></p>
-                        <p>UnAnswered: <a style={{ color: "red", fontWeight: "bold" }}>  {questionData?.length - Object.keys(answers)?.length}</a> </p>
-                    </div>,
-                onOk: () => {
+        if (!testSubmitted) {
+            if (!autoSubmit && !modalOpened) {
+                setModalOpened(true);
+                Modal.confirm({
+                    title: null,
+                    content:
+                        <div>
+                            <h3>Are you sure you want to submit the test ?</h3>
+                            <p>Answered  : <a style={{ color: "green", fontWeight: "bold" }}> {Object.keys(answers)?.length}</a></p>
+                            <p>UnAnswered: <a style={{ color: "red", fontWeight: "bold" }}>  {questionData?.length - Object.keys(answers)?.length}</a> </p>
+                        </div>,
+                    onOk: () => {
+                        if (!isDemo) {
+                            openNotification("Please do not refresh or close the window while submiting", "top", "info")
+                        }
+                        setLoadingLayout(true);
+                        sessionStorage.setItem('handleSubmitCalled', 'true');
+                        clickedOnSubmit(true)
+                        setTestSubmitted(true);
 
-                    clickedOnSubmit(true)
+                        const endTime = new Date(); // Record the end time
+                        const durationInMs = endTime - startTime; // Calculate duration in milliseconds
 
-                    const endTime = new Date(); // Record the end time
-                    const durationInMs = endTime - startTime; // Calculate duration in milliseconds
+                        const durationFormatted = formatDuration(durationInMs);
 
-                    const durationFormatted = formatDuration(durationInMs);
+                        let requestJsonForAnalysis = []
+                        answers && Object.keys(answers).map(x => {
+                            let temp = {}
+                            let id = parseInt(x);
+                            temp.question_id = id
+                            temp.option_selected = answers[id]
+                            requestJsonForAnalysis.push(temp);
+                        })
 
-                    let requestJsonForAnalysis = []
-                    answers && Object.keys(answers).map(x => {
-                        let temp = {}
-                        let id = parseInt(x);
-                        temp.question_id = id
-                        temp.option_selected = answers[id]
-                        requestJsonForAnalysis.push(temp);
-                    })
+                        let totalMarks = checkMarks();
+                        var requestJSONFORUserPerformance = {};
+                        requestJSONFORUserPerformance.user_id = user_id;
+                        requestJSONFORUserPerformance.score = totalMarks
+                        requestJSONFORUserPerformance.exam_duration_time = durationFormatted;
+                        requestJSONFORUserPerformance.status = "Successfully submitted Test"
+                        requestJSONFORUserPerformance.dateTime = now();
 
-                    let totalMarks = checkMarks();
-                    var requestJSONFORUserPerformance = {};
-                    requestJSONFORUserPerformance.user_id = user_id;
-                    requestJSONFORUserPerformance.score = totalMarks
-                    requestJSONFORUserPerformance.exam_duration_time = durationFormatted;
-                    requestJSONFORUserPerformance.dateTime = now();
+                        if (!isDemo) {
 
-                    if (!isDemo) {
-
-                        const postRequestForAnalysis = postApi(enums.BASE_URL + enums.ENDPOINTS.ANALYSIS.SAVE + user_id, requestJsonForAnalysis);
-                        postRequestForAnalysis.then(data => {
-
-                            const postRequestForUserPerformance = postApi(enums.BASE_URL + enums.ENDPOINTS.USERS_PERFORMANCE.SAVE_DETAILS, requestJSONFORUserPerformance);
-                            postRequestForUserPerformance.then(data => {
-
-                                // console.log("response for postRequestForUserPerformancesis body ", data);
-                                // message.success("user performance api done")
-                                inVallidateUser();
-                                openNotification("Test submitted Successfully", "top", "success")
-                                // message.success("Test submitted Successfully")
+                            const postRequestForAnalysis = postApi(enums.BASE_URL + enums.ENDPOINTS.ANALYSIS.SAVE + user_id, requestJsonForAnalysis);
+                            postRequestForAnalysis.then(data => {
+                                const postRequestForUserPerformance = postApi(enums.BASE_URL + enums.ENDPOINTS.USERS_PERFORMANCE.SAVE_DETAILS, requestJSONFORUserPerformance);
+                                postRequestForUserPerformance.then(data => {
+                                    setLoadingLayout(false);
+                                    // console.log("response for postRequestForUserPerformancesis body ", data);
+                                    // message.success("user performance api done")
+                                    inVallidateUser();
+                                    openNotification("Test submitted Successfully", "top", "success")
+                                    Modal.confirm({
+                                        title: null,
+                                        content:
+                                            <div>
+                                                <center><h3>Review Results</h3></center>
+                                                <p> Total correct answers = <a style={{ color: "green", fontWeight: "bold" }}> {totalMarks}</a></p>
+                                                <p> Total wrong answers = <a style={{ color: "red", fontWeight: "bold" }}> {questionData?.length - totalMarks}</a> </p>
+                                                <p> Total Marks = <a style={{ color: "green", fontWeight: "bold" }}>{totalMarks}</a></p>
+                                            </div>,
+                                        okText: "View Summary", // Change "OK" to "View Summary"
+                                        cancelText: null, // Remove default Cancel button
+                                        closable: true, // Enable closing the modal
+                                        closeIcon: <CloseCircleOutlined />,
+                                        onOk: () => {
+                                            setShowResults(true);
+                                            Modal.destroyAll();
+                                        },
+                                        onCancel: () => {
+                                            inVallidateUser();
+                                            clearCookies(tokenId);
+                                            openNotification("Logged Out SuccessFully", "top", "success")
+                                            navigate("/")
+                                            Modal.destroyAll();
+                                        }
+                                    })
+                                }).catch(exception => {
+                                    setLoadingLayout(false);
+                                    console.error("exception e ", exception);
+                                })
 
                             }).catch(exception => {
+                                setLoadingLayout(false);
                                 console.error("exception e ", exception);
                             })
 
-                        }).catch(exception => {
-                            console.error("exception e ", exception);
-                        })
-
+                        } else {
+                            Modal.confirm({
+                                title: null,
+                                content:
+                                    <div>
+                                        <center><h3>Review Results</h3></center>
+                                        <p> Total correct answers = <a style={{ color: "green", fontWeight: "bold" }}> {totalMarks}</a></p>
+                                        <p> Total wrong answers = <a style={{ color: "red", fontWeight: "bold" }}> {questionData?.length - totalMarks}</a> </p>
+                                        <p> Total Marks = <a style={{ color: "green", fontWeight: "bold" }}>{totalMarks}</a></p>
+                                    </div>,
+                                okText: "View Summary", // Change "OK" to "View Summary"
+                                cancelText: null, // Remove default Cancel button
+                                closable: true, // Enable closing the modal
+                                closeIcon: <CloseCircleOutlined />,
+                                onOk: () => {
+                                    setShowResults(true);
+                                    Modal.destroyAll();
+                                },
+                                onCancel: () => {
+                                    clearCookies(tokenId);
+                                    openNotification("Logged Out SuccessFully", "top", "success")
+                                    navigate("/")
+                                    Modal.destroyAll();
+                                }
+                            })
+                            setLoadingLayout(false)
+                        }
+                        setQuizDone(true);
+                        setCookie(`${tokenId}-quizDone`, true)
+                        setCookie(`${tokenId}-totalMarks`, totalMarks)
+                        setCookie(`${tokenId}-showResults`, true)
+                        // document.cookie = `quizDone=true; path=/;`;
+                        // document.cookie = `totalMarks=${totalMarks}; path=/;`;
+                        // document.cookie = `showResults=true; path=/;`;
+                    },
+                    onCancel: () => {
+                        Modal.destroyAll();
+                        openNotification("Exam not submitted", "top", "info")
+                        sessionStorage.setItem('handleSubmitCalled', 'false');
+                        setModalOpened(false);
+                        // sessionStorage.clear()
+                        // message.info("Exam not submitted")
                     }
-                    setQuizDone(true);
-                    setCookie("quizDone", true)
-                    setCookie("totalMarks", totalMarks)
-                    setCookie("showResults", true)
-                    // document.cookie = `quizDone=true; path=/;`;
-                    // document.cookie = `totalMarks=${totalMarks}; path=/;`;
-                    // document.cookie = `showResults=true; path=/;`;
+                })
+            } else if (!modalOpened) {
+                if (!isDemo) {
+                    openNotification("Please do not refresh or close the window while submiting", "top", "info")
+                }
+                setModalOpened(true);
+                setLoadingLayout(true);
+                sessionStorage.setItem('handleSubmitCalled', 'true');
+                clickedOnSubmit(true)
+                setTestSubmitted(true);
+                const endTime = new Date(); // Record the end time
+                const durationInMs = endTime - startTime; // Calculate duration in milliseconds
 
+                const durationFormatted = formatDuration(durationInMs);
+
+                let requestJsonForAnalysis = []
+                answers && Object.keys(answers).map(x => {
+                    let temp = {}
+                    let id = parseInt(x);
+                    temp.question_id = id
+                    temp.option_selected = answers[id]
+                    requestJsonForAnalysis.push(temp);
+                })
+
+                let totalMarks = checkMarks();
+                var requestJSONFORUserPerformance = {};
+                requestJSONFORUserPerformance.user_id = user_id;
+                requestJSONFORUserPerformance.score = totalMarks
+                requestJSONFORUserPerformance.exam_duration_time = durationFormatted;
+                requestJSONFORUserPerformance.status = "Session Expired";
+                requestJSONFORUserPerformance.dateTime = now();
+                if (!isDemo) {
+                    const postRequestForAnalysis = postApi(enums.BASE_URL + enums.ENDPOINTS.ANALYSIS.SAVE + user_id, requestJsonForAnalysis);
+                    postRequestForAnalysis.then(data => {
+                        if (data) {
+                            const postRequestForUserPerformance = postApi(enums.BASE_URL + enums.ENDPOINTS.USERS_PERFORMANCE.SAVE_DETAILS, requestJSONFORUserPerformance);
+                            postRequestForUserPerformance.then(data => {
+                                if (data) {
+                                    setLoadingLayout(false);
+                                    openNotification("Test Submitted Successfully", "top", "success")
+                                    Modal.confirm({
+                                        title: "Confirmation",
+                                        content:
+                                            <div>
+                                                <center><h3>Review Results</h3></center>
+                                                <p> Total correct answers = <a style={{ color: "green", fontWeight: "bold" }}> {totalMarks}</a></p>
+                                                <p> Total wrong answers = <a style={{ color: "red", fontWeight: "bold" }}> {questionData?.length - totalMarks}</a> </p>
+                                                <p> Total Marks = <a style={{ color: "green", fontWeight: "bold" }}>{totalMarks}</a></p>
+                                            </div>,
+                                        onOk: () => {
+                                            setShowResults(true);
+                                            Modal.destroyAll();
+                                        },
+                                        onCancel: () => {
+                                            if (!isDemo) {
+                                                inVallidateUser();
+                                            }
+                                            clearCookies(tokenId);
+                                            openNotification("Logged Out SuccessFully", "top", "success")
+                                            navigate("/")
+                                            Modal.destroyAll();
+                                        }
+                                    })
+                                }
+                            }).catch(exception => {
+                                setLoadingLayout(false);
+                                console.error("exception e ", exception);
+                            })
+                        }
+                    }).catch(exception => {
+                        setLoadingLayout(false);
+                        console.error("exception e ", exception);
+                    })
+                } else {
                     Modal.confirm({
                         title: null,
                         content:
@@ -197,109 +350,39 @@ const QuizPage = (props) => {
                         closeIcon: <CloseCircleOutlined />,
                         onOk: () => {
                             setShowResults(true);
+                            Modal.destroyAll();
                         },
                         onCancel: () => {
-                            if (!isDemo) {
-                                openNotification("Logged Out SuccessFully", "top", "success")
-                                // message.success("Logged Out SuccessFully")
-                                navigate("/")
-                            } else {
-                                clearCookies();
-                                navigate("/");
-                            }
+                            clearCookies(tokenId);
+                            navigate("/");
+                            openNotification("Logged Out SuccessFully", "top", "success")
+                            Modal.destroyAll();
                         }
                     })
-
-                },
-                onCancel: () => {
-                    openNotification("Exam not submitted", "top", "info")
-                    // message.info("Exam not submitted")
+                    setLoadingLayout(false)
                 }
-            })
-        } else {
-            clickedOnSubmit(true)
-
-            const endTime = new Date(); // Record the end time
-            const durationInMs = endTime - startTime; // Calculate duration in milliseconds
-
-            const durationFormatted = formatDuration(durationInMs);
-
-            let requestJsonForAnalysis = []
-            answers && Object.keys(answers).map(x => {
-                let temp = {}
-                let id = parseInt(x);
-                temp.question_id = id
-                temp.option_selected = answers[id]
-                requestJsonForAnalysis.push(temp);
-            })
-
-            let totalMarks = checkMarks();
-            var requestJSONFORUserPerformance = {};
-            requestJSONFORUserPerformance.user_id = user_id;
-            requestJSONFORUserPerformance.score = totalMarks
-            requestJSONFORUserPerformance.exam_duration_time = durationFormatted;
-            requestJSONFORUserPerformance.dateTime = now();
-            if (!isDemo) {
-                const postRequestForAnalysis = postApi(enums.BASE_URL + enums.ENDPOINTS.ANALYSIS.SAVE + user_id, requestJsonForAnalysis);
-                postRequestForAnalysis.then(data => {
-                    if (data) {
-                        // console.log("response for analysis body ", data);
-                        // message.success("Analysis api done")
-                    }
-                }).catch(exception => {
-                    console.error("exception e ", exception);
-                })
-
-                const postRequestForUserPerformance = postApi(enums.BASE_URL + enums.ENDPOINTS.USERS_PERFORMANCE.SAVE_DETAILS, requestJSONFORUserPerformance);
-                postRequestForUserPerformance.then(data => {
-                    if (data) {
-                        // console.log("response for postRequestForUserPerformancesis body ", data);
-                        // message.success("user performance api done")
-                    }
-                }).catch(exception => {
-                    console.error("exception e ", exception);
-                })
+                setQuizDone(true);
+                setCookie(`${tokenId}-quizDone`, true)
+                setCookie(`${tokenId}-totalMarks`, totalMarks)
+                setCookie(`${tokenId}-showResults`, true)
             }
-            setQuizDone(true);
-            setCookie("quizDone", true)
-            setCookie("totalMarks", totalMarks)
-            setCookie("showResults", true)
-            // document.cookie = `quizDone=true; path=/;`;
-            // document.cookie = `totalMarks=${totalMarks}; path=/;`;
-            // document.cookie = `showResults=true; path=/;`;
-
-            Modal.confirm({
-                title: "Confirmation",
-                content:
-                    <div>
-                        <center><h3>Review Results</h3></center>
-                        <p> Total correct answers = <a style={{ color: "green", fontWeight: "bold" }}> {totalMarks}</a></p>
-                        <p> Total wrong answers = <a style={{ color: "red", fontWeight: "bold" }}> {questionData?.length - totalMarks}</a> </p>
-                        <p> Total Marks = <a style={{ color: "green", fontWeight: "bold" }}>{totalMarks}</a></p>
-                    </div>,
-                onOk: () => {
-                    setShowResults(true);
-                },
-                onCancel: () => {
-                    if (!isDemo) {
-                        inVallidateUser();
-                        openNotification("Logged Out SuccessFully", "top", "success")
-                        // message.success("Logged Out SuccessFully")
-                        navigate("/")
-                    } else {
-                        clearCookies();
-                        navigate("/");
-                    }
-                }
-            })
+        } else {
+            openNotification("Test Already submitted", "top", "info")
         }
     }
 
-    // console.log("showresults", showResults, questionData, correctOptions)
+    const handleQuestionChange=(index)=>{
+        setQuestionSelected(index);
+        questionSelectedFromChild(index)
+    }
 
-    // console.log("Question Data",questionData[questionSelected].id)
-    // console.log("questionData length:", questionData, questionSelected);
-    // console.log("answers", answers)
+    const sampleData = Array.from({ length: 10 }, (_, i) => ({
+        id: i + 1,
+        name: `${i + 1}`,
+        icon: "🔷", // Replace with any icon or image
+    }));
+
+    // console.log("sampleData",sampleData)
 
     return (
         <div style={{ height: "100%" }}>
@@ -385,6 +468,58 @@ const QuizPage = (props) => {
                         </div>
                     </div>
 
+                    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", marginTop: "5%" }}>
+                        <Button
+                            // key={item.id}
+                            style={{
+                                border: "1px solid #000",
+                                padding: "1px",
+                                margin: "1px",
+                                width: "50px",
+                                borderRadius: "8px",
+                                textAlign: "center",
+                                cursor: "pointer"
+                            }}
+                            disabled={questionSelected === 0}
+                            onClick={() => handleChangeInPagination('P')}
+                        >
+                            {"<"}
+                        </Button>
+                        {sampleData.map((item, index) => (
+                            <Button
+                                key={item.id}
+                                type={index===questionSelected?"primary":""}
+                                style={{
+                                    border: "1px solid #000",
+                                    padding: "1px",
+                                    margin: "1px",
+                                    width: "50px",
+                                    borderRadius: "8px",
+                                    textAlign: "center",
+                                    cursor: "pointer"
+                                }}
+                                onClick={()=>handleQuestionChange(index)}
+                            >
+                                {item.name} {answers[questionData[index].id] ? <CheckCircleFilled style={{color:"green"}}/>:""}
+                            </Button>
+                        ))}
+                        <Button
+                            // key={item.id}
+                            style={{
+                                border: "1px solid #000",
+                                padding: "1px",
+                                margin: "1px",
+                                width: "50px",
+                                borderRadius: "8px",
+                                textAlign: "center",
+                                cursor: "pointer"
+                            }}
+                            onClick={() => handleChangeInPagination('N')}
+                            disabled={questionSelected === questionData.length - 1}
+                        >
+                            {">"}
+                        </Button>
+                    </div>
                     <div
                         style={{
                             display: "flex",
@@ -397,7 +532,7 @@ const QuizPage = (props) => {
                         }}
                         className="responsive-buttons-container"
                     >
-                        <Button
+                        {/* <Button
                             style={{ width: "5cm", margin: "5px" }}
                             disabled={questionSelected === 0}
                             onClick={() => handleChangeInPagination('P')}
@@ -405,13 +540,13 @@ const QuizPage = (props) => {
                             {"<"} Previous
                         </Button>
                         <Button
-                            type="primary"
+                            // type="primary"
                             style={{ width: "5cm", margin: "5px" }}
                             onClick={() => handleChangeInPagination('N')}
                             disabled={questionSelected === questionData.length - 1}
                         >
                             Next {">"}
-                        </Button>
+                        </Button> */}
                         <Button
                             style={{
                                 width: "5cm",
@@ -425,20 +560,6 @@ const QuizPage = (props) => {
                             Submit Test
                         </Button>
                     </div>
-
-
-                    {/* <div style={{ marginLeft: "5%", marginTop: "8%" }}>
-                        <Button style={{ width: "5cm" }} disabled={questionSelected === 0} onClick={() => handleChangeInPagination('P')}>
-                            {"<"} Previous
-                        </Button>
-                        <Button type="primary" style={{ marginLeft: "5%", width: "5cm" }} onClick={() => handleChangeInPagination('N')} disabled={questionSelected === (questionData.length - 1)}>
-                            Next {">"}
-                        </Button>
-
-                        <Button style={{ marginLeft: "5%", width: "5cm", backgroundColor: "red", color: "white", fontWeight: "bold" }} onClick={() => handleSubmit()}>
-                            Submit Test
-                        </Button>
-                    </div> */}
                 </div>
             }
             {showResults &&
@@ -522,6 +643,11 @@ const QuizPage = (props) => {
                     </div>
                 ))
             }
+            {loadingLayOut && (
+                <div className="loader-overlay">
+                    <div className="loader"></div>
+                </div>
+            )}
         </div>
     )
 }

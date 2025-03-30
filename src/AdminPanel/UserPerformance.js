@@ -5,7 +5,7 @@ import { deleteApi, getApi, postApi, putApi } from '../API/AllRequestTypeAPIsLog
 import enums from '../API/ApiList';
 import DataGridTable from "../DataGridTableStructure.js/DataGridTable";
 import { now } from '../DateTime'
-import {openNotification} from '../DataGridTableStructure.js/PopupMessage'
+import { openNotification } from '../DataGridTableStructure.js/PopupMessage'
 
 const UserPerformance = () => {
 
@@ -13,13 +13,10 @@ const UserPerformance = () => {
     const [questionsAttenedByUser, setQuestionsAttenedByUser] = useState([])
     const [isOpen, setIsOpen] = useState(false);
     const [tokenId, setTokenId] = useState(null)
-    const [Action, setAction] = useState(null);
-    const [IdSelected, setIdSelected] = useState(0);
-    const [open, setOpen] = useState(false);
-    const [form] = Form.useForm();
-    const [requestDone, setRequestDone] = useState(0);
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
+        setLoading(true)
         const temp = getApi(enums.BASE_URL + enums.ENDPOINTS.USERS_PERFORMANCE.GET_ALL_USERS);
         temp.then(data => {
             var userTemp = []
@@ -29,33 +26,37 @@ const UserPerformance = () => {
                 x.rank = index + 1;
                 userTemp.push(x);
             })
-            // console.log("userTemp ", userTemp)
             setUserDetails(userTemp)
+            setLoading(false)
         }).catch(error => {
+            setLoading(false)
             console.error("Error fetching data:", error);
         });
     }, [])
 
-  
+
     const handleTokenClick = (tokenId) => {
         // message.info(tokenId)
         setTokenId(tokenId);
+        setIsOpen(true);
+        setLoading(true)
         const tempQuestionsData = getApi(enums.BASE_URL + enums.ENDPOINTS.USERS_PERFORMANCE.GET_ALL_QUESTIONS_BY_TOKEN_ID + tokenId)
         tempQuestionsData.then(data => {
             if (data) {
-                var temp=[]
-                data && data.map((x,index)=>{
-                    var t=x;
-                    t.id=index+1;
-                    t.sno=index+1;
+                var temp = []
+                data && data.map((x, index) => {
+                    var t = x;
+                    t.id = index + 1;
+                    t.sno = index + 1;
                     temp.push(t);
                 })
                 // console.log("Data by Token Id",temp);
-                setQuestionsAttenedByUser(temp);    
-                setIsOpen(true);
+                setQuestionsAttenedByUser(temp);
+                setLoading(false)
             }
         }).catch(exception => {
-            openNotification("Questions fetching by token id is failed","top","error")
+            setLoading(false)
+            openNotification("Questions fetching by token id is failed", "top", "error")
             // message.error("Questions fetching by token id is failed")
             console.error("Exception in getting questions by tokenid", exception)
         })
@@ -97,6 +98,15 @@ const UserPerformance = () => {
             // }
         },
         {
+            headerName: "Status", description: "Status", field: "status", width: "100", align: "center", headerAlign: "center", align: "center", headerClassName: "headerCellColor", sortable: false, valueFormatter: (value, row, column, apiRef) => {
+                if(value!==null){
+                    return value;
+                }else{
+                    return "Network Issue"
+                }
+            }
+        },
+        {
             headerName: "Exam Duration", description: "Exam Duration", field: "examDurationTime", width: "150", align: "center", headerAlign: "center", headerClassName: "headerCellColor", sortable: false, valueFormatter: (value, row, column, apiRef) => {
                 // console.log("Value = ", value)
                 if (value) {
@@ -127,9 +137,9 @@ const UserPerformance = () => {
                 return duration1 - duration2; // Ascending order
             }
         },
-        { headerName: "Rank", description: "Rank", field: "rank", width: "150", headerAlign: "center", align: "center", headerClassName: "headerCellColor", sortable: false },
+        { headerName: "Rank", description: "Rank", field: "rank", width: "100", headerAlign: "center", align: "center", headerClassName: "headerCellColor", sortable: false },
         {
-            headerName: "Activity Date", description: "Activity Date", field: "dateTime", width: "300", align: "center", headerAlign: "center", headerClassName: "headerCellColor", sortable: false, valueFormatter: (value, row, column, apiRef) => {
+            headerName: "Activity Date", description: "Activity Date", field: "dateTime", width: "250", align: "center", headerAlign: "center", headerClassName: "headerCellColor", sortable: false, valueFormatter: (value, row, column, apiRef) => {
                 if (value) {
                     const timestamp = Date.parse(value); // Parse the formatted date string into a timestamp
 
@@ -188,15 +198,15 @@ const UserPerformance = () => {
 
     return (
         <div>
-            <DataGridTable columns={UserDetailsColums} rows={usersDetails} height={495} initialSortingField={null} initialSortingType={null} />
+            <DataGridTable columns={UserDetailsColums} rows={usersDetails} height={495} initialSortingField={null} initialSortingType={null} loading={loading}/>
             <Modal
                 open={isOpen}
-                title={<h4>Questions Attened By User with Token Id : <a style={{fontFamily:"bold",fontSize:"large",color:"#1677ff"}}>{tokenId}</a></h4>}
+                title={<h4>Questions Attened By User with Token Id : <a style={{ fontFamily: "bold", fontSize: "large", color: "#1677ff" }}>{tokenId}</a></h4>}
                 footer={null}
                 onCancel={handleCancel}
                 width={950}
             >
-                <DataGridTable columns={questionsColumns} rows={questionsAttenedByUser} height={495} initialSortingField={null} initialSortingType={null} />
+                <DataGridTable columns={questionsColumns} rows={questionsAttenedByUser} height={495} initialSortingField={null} initialSortingType={null} loading={loading}/>
 
             </Modal>
         </div>

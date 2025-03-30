@@ -1,5 +1,20 @@
-// var base_url = "http://localhost:8083"
-var base_url = "http://3.107.201.205:8080"
+let base_url;
+
+if (window.location.hostname === "localhost") {
+    base_url = "http://localhost:8083";
+} else if (window.location.hostname === "www.speed-iq.com") {
+    base_url = "https://api.speed-iq.com";
+}
+else if (window.location.hostname === "speediqfrontend.s3-website-ap-southeast-2.amazonaws.com") {
+    base_url = "http://3.107.201.205:8080";
+} else {
+    base_url = "https://api.speed-iq.com";
+}
+// } else if (window.location.hostname === "speediq.com.s3-website.eu-north-1.amazonaws.com") {
+//     base_url = "http://13.60.180.184:8080";
+// }
+
+
 
 const enums = {
     BASE_URL: base_url,
@@ -18,7 +33,7 @@ const enums = {
             DELETE: "/api/login/delete/",//{id} to be placed,
             BULKUPLOAD: "/api/login/upload",
             GET_ALL_LOGIN_DETAILS: "/api/login/getAll",
-            DELELETALL:"/api/login/deleteAll",
+            DELELETALL: "/api/login/deleteAll",
         },
         Questions: {
             GET_RANDOM_QUESTIONS: "/api/questions/getRandom",
@@ -27,7 +42,7 @@ const enums = {
             BULKUPLOAD: "/api/questions/upload",
             ADD_QUESTION: "/api/questions/add",
             GET_ALL_QUESTIONS: "/api/questions/getAll",
-            DELELETALL:"/api/questions/deleteAll",
+            DELELETALL: "/api/questions/deleteAll",
         },
         USERS_PERFORMANCE: {
             SAVE_DETAILS: "/api/userperformance/save", // Get all posts
@@ -36,19 +51,19 @@ const enums = {
             GET_SINGLE_USER: "/api/userperformance/get/",//{id} to be placed
             GET_ALL_USERS: "/api/userperformance/getAll",
             GET_ALL_QUESTIONS_BY_TOKEN_ID: "/api/userperformance/getQuestionsByTokenId/",//{tokenid} need to add
-            DELELETALL:"/api/userperformance/deleteAll",
+            DELELETALL: "/api/userperformance/deleteAll",
         },
         ANALYSIS: {
             SAVE: "/api/analysis/save/",//{id need to provide}
             GET_ALL_ANALYSIS_BASED_ON_ID: "/api/analysis/getAll/",//{id need to provide}
-            DELELETALL:"/api/analysis/deleteAll",
+            DELELETALL: "/api/analysis/deleteAll",
         },
-        CONTENTGUIDELINES:{
+        CONTENTGUIDELINES: {
             GETALL: "/api/guidelines/getAll",
-            INSERT:"/api/guidelines/insert",
-            UPDATE:"/api/guidelines/", //{id} need to be inserted
-            DELETE:"/api/guidelines/",//{id} need to be inserted
-            GETCONTENTBYID:"/api/guidelines/getById/", //{id} need to be insert
+            INSERT: "/api/guidelines/insert",
+            UPDATE: "/api/guidelines/", //{id} need to be inserted
+            DELETE: "/api/guidelines/",//{id} need to be inserted
+            GETCONTENTBYID: "/api/guidelines/getById/", //{id} need to be insert
         }
     },
 };

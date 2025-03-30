@@ -1,14 +1,15 @@
 import { Button } from 'antd';
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import { getCookie, setCookie } from '../Cookies/GetCookies';
 
 const ContentAndGuidelines = (props) => {
     const { timerDone } = props
-    const isdemo = getCookie('isdemo') == 'true'
     const screenWidth = props.screenWidth
+    let tokenId = sessionStorage.getItem('tokenId');
+    const isdemo = getCookie(`${tokenId}-isdemo`) == 'true'
 
     const handleStartTest = () => {
-        setCookie("guideLinesDone", true);
+        setCookie(`${tokenId}-guideLinesDone`, true);
         timerDone(true);
     }
 
@@ -22,9 +23,9 @@ const ContentAndGuidelines = (props) => {
                     {!isdemo &&
                         <>
                             <center><h3>User Details</h3></center>
-                            <p style={{ fontFamily: "bold", fontSize: "large", marginTop: "0.2cm" }}> User Name : {getCookie('username')}</p>
-                            <p style={{ fontFamily: "bold", fontSize: "large", marginTop: "0.2cm" }}> Mobile No : {getCookie('mobilenumber')}</p>
-                            <p style={{ fontFamily: "bold", fontSize: "large" }}> Token Id : {getCookie('tokenId')}</p>
+                            <p style={{ fontFamily: "bold", fontSize: "large", marginTop: "0.2cm" }}> User Name : {getCookie(`${tokenId}-username`)}</p>
+                            <p style={{ fontFamily: "bold", fontSize: "large", marginTop: "0.2cm" }}> Mobile No : {getCookie(`${tokenId}-mobilenumber`)}</p>
+                            <p style={{ fontFamily: "bold", fontSize: "large" }}> Token Id : {tokenId}</p>
                         </>
                     }
                     <center>

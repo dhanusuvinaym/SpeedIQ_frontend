@@ -14,6 +14,7 @@ function BulkUploadOfQuestions(props) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState([]);
+  const tokenId = sessionStorage.getItem("tokenId")
 
   const handleFileUpload = (info) => {
     const fileList = info.fileList;
@@ -44,7 +45,7 @@ function BulkUploadOfQuestions(props) {
     setLoading(true);
     const formData = new FormData();
     formData.append("file", file);
-    axios.post(enums.BASE_URL + (flag === 'questions' ? enums.ENDPOINTS.Questions.BULKUPLOAD : enums.ENDPOINTS.LOGIN.BULKUPLOAD), formData, { headers: { "Content-Type": "multipart/form-data" ,"Authorization":`Bearer ${getCookie('jwtToken')}`,"Demo":String(getCookie('isdemo') === 'true')} })
+    axios.post(enums.BASE_URL + (flag === 'questions' ? enums.ENDPOINTS.Questions.BULKUPLOAD : enums.ENDPOINTS.LOGIN.BULKUPLOAD), formData, { headers: { "Content-Type": "multipart/form-data" ,"Authorization":`Bearer ${getCookie(`${tokenId}-jwtToken`)}`,"Demo":String(getCookie(`${tokenId}-isdemo`) === 'true')} })
       .then(data => {
         if (data) {
           // console.log("Questions bulk data", data)

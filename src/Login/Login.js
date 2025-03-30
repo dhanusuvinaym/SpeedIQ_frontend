@@ -8,6 +8,7 @@ import enums from '../API/ApiList';
 import { clearCookies, setCookie } from "../Cookies/GetCookies";
 import { openNotification } from '../DataGridTableStructure.js/PopupMessage';
 import Content_guideLines_Login_page from '../UserPanel/Content_guideLines_login_page';
+import axios from 'axios';
 
 function LoginPage() {
   const [username, setUsername] = useState(null);
@@ -19,11 +20,11 @@ function LoginPage() {
   const [password, setPassword] = useState(null);
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   const [count, setCount] = useState(0);
-
+  const [loadingLayOut, setLoadingLayOut] = useState(false)
 
   useEffect(() => {
     if (count == 0) {
-      clearCookies();
+      sessionStorage.clear();
       setCount(count + 1);
     }
   }, [])
@@ -92,28 +93,37 @@ function LoginPage() {
       jwtToken: null
     }
 
-    let loginRequest = postApi(enums.BASE_URL + enums.ENDPOINTS.LOGIN.VALIDATE, data)
+    // console.log("Data sending for login ", data)
+    setLoadingLayOut(true)
+    let loginRequest = axios.post(enums.BASE_URL + enums.ENDPOINTS.LOGIN.VALIDATE, data)
     loginRequest.then(data => {
-      // console.log("data", data);
-      if (data.isvalid) {
-        navigate("/nav");
-        setCookie("tokenId", data?.tokenId)
-        setCookie("isadmin", false)
-        setCookie("isvalid", true)
-        setCookie("id", data.id)
-        setCookie("jwtToken", data?.jwtToken)
-        setCookie("isdemo", false)
-        setCookie("username", username)
-        setCookie("mobilenumber", mobilenumber)
-        // document.cookie = `tokenId=${data.tokenId}; path=/;`;
-        // document.cookie = `isadmin=${data.isadmin}; path=/;`;
-        // document.cookie = `id=${data.id}; path=/;`;
+      // console.log("data at login", data);
+      if (data?.status === 200) {
+        setLoadingLayOut(false)
+        data = data?.data
+        if (data.isvalid) {
+          const tokenId = data?.tokenId
+          navigate("/nav");
+          sessionStorage.setItem("tokenId", tokenId)
+          setCookie(`${tokenId}-isadmin`, false)
+          setCookie(`${tokenId}-isvalid`, true)
+          setCookie(`${tokenId}-id`, data.id)
+          setCookie(`${tokenId}-jwtToken`, data?.jwtToken)
+          setCookie(`${tokenId}-isdemo`, false)
+          setCookie(`${tokenId}-username`, username)
+          setCookie(`${tokenId}-mobilenumber`, mobilenumber)
+        } else {
+          setLoadingLayOut(false)
+          openNotification("The credentials has been expired! Please Contact administrator..", "top", "error")
+          // message.error("The credentials has been expired! Please Contact administrator..");
+        }
       } else {
-        openNotification("The credentials has been expired! Please Contact administrator..", "top", "error")
-        // message.error("The credentials has been expired! Please Contact administrator..");
+        setLoadingLayOut(false)
+        openNotification("Please Check the credentials!", "top", "error")
       }
     })
       .catch(err => {
+        setLoadingLayOut(false)
         openNotification("Exception while logging in" + err?.response?.data, "top", "error")
         // message.error("Exception while logging in", err?.response?.data);
       });
@@ -127,28 +137,29 @@ function LoginPage() {
       username: adminUsername,
       password: password
     }
-    const validateAdmin = postApi(enums.BASE_URL + enums.ENDPOINTS.ADMIN.VALIDATE + `?username=${data?.username}&password=${data?.password}`, null)
+    setLoadingLayOut(true)
+    const validateAdmin = axios.post(enums.BASE_URL + enums.ENDPOINTS.ADMIN.VALIDATE + `?username=${data?.username}&password=${data?.password}`, null)
     validateAdmin.then(data => {
-      if (data) {
-        // console.log("Data from the admin ", data);
+      if (data?.status === 200) {
+        data = data?.data;
+        setLoadingLayOut(false)
         openNotification("Logined Successfully!", "top", "success")
-        // message.success("Logined Successfully!")
         navigate("/nav");
-        setCookie("password", data?.password)
-        setCookie("isadmin", true)
-        setCookie("isvalid", true)
-        setCookie("id", data?.id)
-        setCookie("jwtToken", data?.jwtToken)
-        setCookie("isdemo", false)
-        setCookie("username", adminUsername)
-
+        sessionStorage.setItem("tokenId", adminUsername)
+        setCookie(`${adminUsername}-password`, data?.password)
+        setCookie(`${adminUsername}-isadmin`, true)
+        setCookie(`${adminUsername}-isvalid`, true)
+        setCookie(`${adminUsername}-id`, data?.id)
+        setCookie(`${adminUsername}-jwtToken`, data?.jwtToken)
+        setCookie(`${adminUsername}-isdemo`, false)
+        setCookie(`${adminUsername}-username`, adminUsername)
       } else {
+        setLoadingLayOut(false)
         openNotification("Please check the credentials!", "top", "error")
-        // message.error("Please check the credentials!")
       }
     }).catch(exception => {
+      setLoadingLayOut(false)
       openNotification("Please check the credentials!", "top", "error")
-      // message.error("Please check the credentials!")
       console.error("exception = ", exception)
     })
 
@@ -159,8 +170,9 @@ function LoginPage() {
   }
 
   const handleClickOnDemo = () => {
-    // alert("function invoked");
-    setCookie("isdemo", true)
+    sessionStorage.setItem("tokenId", "demo")
+    setCookie(`demo-isdemo`, true)
+    setCookie(`demo-isvalid`, true)
     navigate("/nav");
   }
 
@@ -168,16 +180,13 @@ function LoginPage() {
     setAction(null);
   }
 
-  // const handleDummy = () => {
-  //   openNotification("hello", "top", "info")
-  // }
 
   return (
     <div style={{ textAlign: "center", padding: screenWidth > 500 ? "5%" : "1%" }}>
       <center>
         <div style={{ width: screenWidth > 500 ? "50%" : "100%", backgroundColor: "black", height: "100%", borderRadius: "0.5cm", padding: "2%", marginTop: screenWidth > 500 ? "0" : "15%" }}>
           <h2 style={{ color: "white", fontFamily: "inherit", marginBottom: "10%", fontSize: "30px" }}>
-            <span> <FontAwesomeIcon icon={faBrain}/> SpeedIQ</span>
+            <span> <FontAwesomeIcon icon={faBrain} /> SpeedIQ</span>
           </h2>
           {action === null &&
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "30px" }}>
@@ -317,6 +326,12 @@ function LoginPage() {
 
         </div>
       </center>
+
+      {loadingLayOut && (
+        <div className="loader-overlay">
+          <div className="loader"></div>
+        </div>
+      )}
 
       {/* <Button onClick={handleDummy}>Dummy</Button> */}
     </div>
