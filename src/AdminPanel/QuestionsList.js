@@ -60,7 +60,7 @@ const QuestionsList = () => {
             onCancel: () => {
                 openNotification("Action canceled", "top", "info")
                 // message.info("Action canceled")
-                console.log("Action canceled"); // Handle cancel action here
+                //console.log("Action canceled"); // Handle cancel action here
             },
         });
     }
@@ -230,7 +230,7 @@ const QuestionsList = () => {
             onCancel: () => {
                 openNotification("Action canceled", "top", "info")
                 // message.info("Action canceled")
-                console.log("Action canceled"); // Handle cancel action here
+                // console.log("Action canceled"); // Handle cancel action here
             },
         });
     }

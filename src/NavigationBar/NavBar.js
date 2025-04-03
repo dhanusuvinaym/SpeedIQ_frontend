@@ -62,18 +62,11 @@ const items = [
   TeamOutlined,
   ShopOutlined,
 ]
-// .map((icon, index) => ({
-//   key: String(index + 1),
-//   icon: React.createElement(icon),
-//   label: `nav ${index + 1}`,
-// }));
-
-
 
 const Timer = (props) => {
   let tokenId =sessionStorage.getItem("tokenId")
   let time = getCookie(`${tokenId}-timeLeft`)
-  const [timeLeft, setTimeLeft] = useState(time ? parseInt(time) : (30 * 60));
+  const [timeLeft, setTimeLeft] = useState(time ? parseInt(time) : (30*60));
   const { setAutoSubmit } = props;
 
   useEffect(() => {

@@ -34,6 +34,7 @@ const enums = {
             BULKUPLOAD: "/api/login/upload",
             GET_ALL_LOGIN_DETAILS: "/api/login/getAll",
             DELELETALL: "/api/login/deleteAll",
+            GETBYTOKENID:"/api/login/getByTokenId/" //{tokenId} to be placed
         },
         Questions: {
             GET_RANDOM_QUESTIONS: "/api/questions/getRandom",

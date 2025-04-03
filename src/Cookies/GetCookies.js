@@ -1,11 +1,18 @@
+
 function encodeBase64(value) {
-    return btoa(value);
+
+    return encodeURIComponent(value)
+    // return value;
+    // const compressed = LZString.compressToBase64(value);
+    // return btoa(encodeURIComponent(compressed));
 }
 
 function decodeBase64(value) {
-    return atob(value);
+    return decodeURIComponent(value)
+    // return value;
+    // const decoded = decodeURIComponent(atob(value));
+    // return LZString.decompressFromBase64(decoded);
 }
-
 
 export function getCookie(name) {
     const cookieArr = document.cookie.split(';');

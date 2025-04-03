@@ -2,6 +2,7 @@ import axios from "axios";
 import { getCookie } from "../Cookies/GetCookies";
 import { now } from "../DateTime";
 import enums from "./ApiList";
+import { openNotification } from "../DataGridTableStructure.js/PopupMessage";
 
 export const getApi = async (apiUrl) => {
 
@@ -99,30 +100,41 @@ export const deleteApi = async (apiUrl) => {
 
 
 export const inVallidateUser = async () => {
-  const tokenId = sessionStorage.getItem("tokenId")
-  const jwtToken = getCookie(`${tokenId}-jwtToken`)
-  const isdemo = getCookie(`${tokenId}-isdemo`) === 'true'
+  const tokenId = sessionStorage.getItem("tokenId");
+  const jwtToken = getCookie(`${tokenId}-jwtToken`);
+  const isdemo = getCookie(`${tokenId}-isdemo`) === 'true';
 
   const requestJson = {
     id: parseInt(getCookie(`${tokenId}-id`)),
-    username:getCookie(`${tokenId}-username`),
-    mobileNumber:getCookie(`${tokenId}-mobilenumber`),
+    username: getCookie(`${tokenId}-username`),
+    mobileNumber: getCookie(`${tokenId}-mobilenumber`),
     tokenId: tokenId,
     isvalid: false,
     activity_date: now(),
-  }
+  };
 
-  axios.put(enums.BASE_URL + enums.ENDPOINTS.LOGIN.UPDATE + requestJson.id, requestJson, {
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${jwtToken}`,
-      "Demo": isdemo !== null ? String(isdemo) : "false"
+  try {
+    const response = await axios.put(
+      enums.BASE_URL + enums.ENDPOINTS.LOGIN.UPDATE + requestJson.id,
+      requestJson,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${jwtToken}`,
+          "Demo": isdemo !== null ? String(isdemo) : "false",
+        },
+      }
+    );
+
+    if (response.data) {
+      // openNotification("User Invalidated", "top", "success");
+      return 200;
+    } else {
+      return 404;
     }
-  }).then(data => {
-    if (data) {
-      // clearCookies();
-    }
-  }).catch(exception => {
-    console.error("Exception while invalidating the User ", exception);
-  })
+  } catch (exception) {
+    console.error("Exception while invalidating the User", exception);
+    return 404;
+  }
 };
+
